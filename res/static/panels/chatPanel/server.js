@@ -1,4 +1,5 @@
 var func;
+var prefix;
 //(((((((((((((((((((((((((((((((((((((())))))))))))))))))))))))))))))))))))))
 //((((((((((((((((((((RegEx Expressions (for parsing))))))))))))))))))))))))))
 var regex = {
@@ -15,10 +16,11 @@ var regex = {
 
 
 module.exports = {
-  //****************************************************************************
+  name: "Chat Panel",
 
-  init: function(parent) {
-    func = parent; //access shared functions
+  init: function(parent, folderName) {
+    func = parent;
+    prefix = func.prefix.function + "  (" + folderName + ")";
   },
 
   processMessage: function(message, mongo, socket, io) {
@@ -57,12 +59,12 @@ function buildMath(str) {
 
 // splits the str nicely when given regex
 function findRegEx(reg, str) {
-  func.log(func.pref.function, ['testing ', str, ' for ', reg.toString()]);
+  func.log(prefix, ['testing ', str, ' for ', reg.toString()]);
   var res = reg.exec(str);
   if (res === null) {
     return null;
   }
-  func.log(func.pref.function, [reg.toString(), ' match found: ', res[0]]);
+  func.log(prefix, [reg.toString(), ' match found: ', res[0]]);
   return {
     first: str.substring(0, res.index),
     match: res[1],

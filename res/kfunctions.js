@@ -7,14 +7,18 @@ var modFunctions = {};
 
 module.exports = {
 
-  init: function(modList) {
-    for (var i in modList) {
-      modFunctions[modList[i]] = require('./static/panels/' + modList[i] + '/server.js');
-      modFunctions[modList[i]].init(this);
+  modFunctions: {},
+
+  init: function(panelList) {
+    this.log(this.prefix.function, "Loading server-side panel files...", true);
+    for (var i in panelList) {
+      this.modFunctions[panelList[i]] = require('./static/panels/' + panelList[i] + '/server.js');
+      this.modFunctions[panelList[i]].init(this, panelList[i]);
+      this.log(this.prefix.function, panelList[i] + " successfully initialized.", true);
     }
   },
 
-  pref:  {
+  prefix:  {
     socket:         '>>>>>>SOCKET.io>>>>>>>',
     mongo:          '######MONGOdb#########',
     express:        '******EXPRESSjs*******',
@@ -32,9 +36,8 @@ module.exports = {
         message = this.createPanel(message);
       }
     } else
-    if (message.from && message.from.type && modFunctions[message.from.type]) {
-        message = modFunctions[message.from.type].
-                                    processMessage(message, mongo, socket, io);
+    if (message.from && message.from.type && this.modFunctions[message.from.type]) {
+        message = this.modFunctions[message.from.type].processMessage(message, mongo, socket, io);
     }
     return message;
   },
@@ -69,14 +72,14 @@ module.exports = {
     funcVerbose = v;
   },
 
-  log: function(pref, strArray, force=false) {
+  log: function(prefix, strArray, force=false) {
     if ((!verbose && !force) ||
-        (!funcVerbose && pref === this.pref.function)) return;
-    str = '';
+        (!funcVerbose && prefix.startsWith(this.prefix.function))) return;
+    str = ''; //TODO fix the above so that force works with funcVerbose
     for (var s in strArray) {
       str += readify(strArray[s]);
     }
-    console.log(dateline(pref) + str);
+    console.log(dateline(prefix) + str);
   },
 
 }
