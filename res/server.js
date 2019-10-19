@@ -37,6 +37,7 @@ io.on('connection', function(socket) {
   socket.on('serv', function(msg){
     func.log(func.prefix.socket, ['received message: ', msg]);
     msg = func.processMessage(msg, mongo, socket);
+    func.log(func.prefix.socket, ['sent message: ', msg]);
     io.emit('upd', msg);
   });
   socket.on('disconnect', function(){

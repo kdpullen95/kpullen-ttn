@@ -24,9 +24,13 @@ module.exports = {
   },
 
   processMessage: function(message, mongo, socket, io) {
-    if (message.action === 'chatmsg') {
-      return parseChatMessage(message);
-    }
+    switch(message.action) {
+      case 'chatmsg':
+        return parseChatMessage(message);
+        break;
+      default:
+        return message;
+      }
   },
 }
 

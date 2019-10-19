@@ -2,7 +2,7 @@ var panelArray = [];
 var socket = io();
 
 socket.on('upd', function (msg) {
-  log(msg);
+  log(['received message: ', msg]);
   panelArray.forEach(function(panel) {
     panel.putm(msg);
   });
@@ -16,26 +16,23 @@ function startup() {
 }
 
 function sendm(mes) {
-  log(mes);
+  log(['sending message: ', mes]);
   socket.emit('serv', mes);
 }
 
-function factoryStartup() {
-  arr = [];
-  arr.push(new Panel("testPanel", '10'));
-  arr.push(new Panel("testPanel", '11'));
-  arr.push(new Panel("chatPanel", '12'));
-  arr.push(new Panel());
-  arr.push(new Panel());
-  addPanels(arr, "panelContainer");
+function addPanel(panel, to="panelContainer") {
+  log(['adding panel: ', panel]);
+  panelArray.push(panel);
+  panel.initElement();
+  document.getElementById(to).appendChild(panel.element);
 }
 
-function addPanels(pArr, to) {
-  var container = document.getElementById(to);
-  pArr.forEach(function(panel) {
-    log(panel);
-    panelArray.push(panel);
-    panel.initElement();
-    container.appendChild(panel.element);
-  });
+function removePanel() {
+  //TODO TODO TODO TODO TODO NO BLOAT/MEMORY LEAK
+}
+
+function factoryStartup() {
+  addPanel(new Panel("testPanel", '11'));
+  addPanel(new Panel("chatPanel", '12'));
+  addPanel(new Panel());
 }

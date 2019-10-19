@@ -3,7 +3,7 @@ var panel;
 function init(panel) {
   this.panel = panel;
   this.panel.assignChild(this);
-  this.panel.passm({action: 'init'});
+  this.panel.passm({action: 'init', appl:[getID()]});
 }
 
 function putm(msg) {

@@ -31,13 +31,13 @@ module.exports = {
   //*********************MESSAGE PROCESSING & RESPONSE**************************
 
   processMessage: function(message, mongo, socket, io) {
-    if (message.action === 'init') {
-      if (message.from.id === '0') {
-        message = this.createPanel(message);
-      }
-    } else
-    if (message.from && message.from.type && this.modFunctions[message.from.type]) {
+    if (message.from && message.from.type) {
+      if (message.action && message.action === 'initPanel') {
+        this.createPanel(message);
+      } else
+      if (this.modFunctions[message.from.type]) {
         message = this.modFunctions[message.from.type].processMessage(message, mongo, socket, io);
+      }
     }
     return message;
   },
@@ -46,14 +46,23 @@ module.exports = {
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+  //TODO actual assignment of proper values, not random
   createPanel: function(message) {
-    if (typeof(message.content) === 'undefined') {
-      message.content = {};
-    }
-    message.content.id = 645;
-    message.content.width = 300;
-    message.content.height = 300;
+    message.content = {};
+    message.content.id = message.from.id == '0' ? this.assignID() : message.from.id;
+    message.content.loc = this.getSizeValues(message.content.id);
+    message.content.type = message.from.type;
     return message;
+  },
+
+  //TODO
+  assignID: function() {
+    return Math.floor(Math.random() * 10000);
+  },
+
+  //TODO
+  getSizeValues: function(id) {
+    return {width: 400, height: 400, top: 0, left: 0};
   },
 
   //============================================================================

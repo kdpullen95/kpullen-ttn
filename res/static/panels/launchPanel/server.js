@@ -11,11 +11,13 @@ module.exports = {
 
   processMessage: function(message, mongo, socket, io) {
     if (message.action === "init") {
+      panelList = [];
       Object.keys(func.modFunctions).forEach(function (key) {
         panelList.push([key, func.modFunctions[key].name]);
       });
       func.log(prefix, ["Launch Panel panelList created: ", panelList]);
+      message.content = panelList;
     }
-    return messsage;
+    return message;
   },
 }
