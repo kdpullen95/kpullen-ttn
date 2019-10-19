@@ -11,7 +11,7 @@ var regex = {
   exponent: /\d+(\[.+\])?\s*\^\s*\d+/,                          //... exponent
   multiply: /\d+(\[.+\])?\s*\*\s*\d+/,                          //... multiply
   roll: /\d+(\[.+\])?d\d+/,              //rolls dice, #d# format, no space
-  convert: 0, //converts between imperial/metric
+  convert: 0,                         //converts between imperial/metri TODOc
 }
 
 

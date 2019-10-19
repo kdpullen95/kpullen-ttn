@@ -11,9 +11,9 @@ const func = require('./kfunctions.js');
 //COMMAND-LINE OPTIONS
 const databaseName = typeof(process.argv[2]) !== 'undefined' ? process.argv[2] : 'default'; //2
 const port = 8090; //3 TODO
-func.setVerbose(process.argv[4] === 't' ? true : false); //4
-func.setFuncVerbose(process.argv[5] === 't' ? true : false); //5
-func.setObjExpand(process.argv[6] === 't' ? true : false); //6
+func.setVerbose(process.argv[4] === 't'); //4
+func.setFuncVerbose(process.argv[5] === 't'); //5
+func.setObjExpand(process.argv[6] === 't'); //6
 //end COMMAND-LINE OPTIONS
 
 //TODO - at some point, this block will be moved to the C++ executable
