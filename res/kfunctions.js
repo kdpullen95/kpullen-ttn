@@ -3,6 +3,8 @@ var objExpand = false;
 var funcVerbose = false;
 var mongoDB;
 var _this; //TODO remove this, it's clunky? But improves readability over module.exports?
+var reqFunctions = ["init", "processMessage"]; //TODO move this to a file or something
+var sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
 
 //****************************************************************************
 
@@ -25,7 +27,7 @@ module.exports = {
 
   prefix:  {
     socket:         '>>>>>>SOCKET.io>>>>>>>',
-    mongo:          '######MONGOdb#########',
+    mongo:          '#######MONGOdb########',
     express:        '******EXPRESSjs*******',
     default:        '------DEFAULTmsg------',
     function:       '%%%%%%kfunctions%%%%%%',
@@ -42,7 +44,7 @@ module.exports = {
         this.createPanel(message);
       } else
       if (this.modFunctions[message.from.type]) {
-        message = this.modFunctions[message.from.type].processMessage(message, mongoDB, socket, io);
+        message = this.modFunctions[message.from.type].processMessage(message);
       }
     }
     return message;
@@ -96,10 +98,12 @@ module.exports = {
     console.log(dateline(prefix) + str);
   },
 
-  error: function(error, exit=true) {
-    this.log(this.prefix.error, [error.stack], true);
-    if (exit) process.exitCode = 1; //TODO process.exit() might be better? need
-                                    //to observe desired behavior.
+  error: function(error, stack=true, exit=false) {
+    var err = [error.message];
+    if (stack) err.push(error.stack);
+    this.log(this.prefix.error, err, true);
+    if (exit) process.exit(1);    //TODO process.exit() vs process.errorCode
+                                      //need to gracefully exit.
   }
 
 }
@@ -132,18 +136,18 @@ async function initPanels(panelList) {
       _this.modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
                                           //on the rest of them even if try/catch is called
     } catch (e) { //TODO are there any important errors that should be let through?
-      _this.log(_this.prefix.function, [panelList[i], " failed to initialize. Error: ", e]);
+      _this.log(_this.prefix.function, [panelList[i], " failed to initialize. error ->"]);
+      _this.error(e, false);
     }
   }
 }
 
 function compatEval(mod) {
-  //TODO make compatability check reliant on docu & loop, not hardcoded
-  //TODO check for file compat too?
-  if (!(typeof mod.processMessage === "function" && typeof mod.init === "function")) {
-    var error = new Error("Module missing required functions");
-    error.code = "MODULE-NOT-COMPLIANT";
-    throw error;
+  reqFunctions.forEach(function(element) {
+    if (typeof mod[element] !== "function") throw new Error("Module missing required function.");
+  });
+  if (false) { //TODO check for file compat
+    throw new Error("Module missing required index files.");
   }
 }
 

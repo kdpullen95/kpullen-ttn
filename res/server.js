@@ -52,9 +52,14 @@ function runServer() {
     func.log(func.prefix.socket, ['user connected']);
     socket.on('serv', function(msg){
       func.log(func.prefix.socket, ['received message: ', msg]);
-      msg = func.processMessage(msg, socket, io);
-      func.log(func.prefix.socket, ['sent message: ', msg]);
-      io.emit('upd', msg);
+      try {
+        msg = func.processMessage(msg, socket, io);
+        func.log(func.prefix.socket, ['sent message: ', msg]);
+        io.emit('upd', msg);
+      } catch (e) {
+        func.log(func.prefix.socket, ['error processing message: ', msg, '. error ->']);
+        func.error(e);
+      }
     });
     socket.on('disconnect', function(){
       func.log(func.prefix.socket, ['user disconnected']);
