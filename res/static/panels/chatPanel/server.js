@@ -28,6 +28,8 @@ module.exports = {
       case 'chatmsg':
         return parseChatMessage(message);
         break;
+      case 'init':
+        return loadData(message, mongo);
       default:
         return message;
       }
@@ -74,4 +76,13 @@ function findRegEx(reg, str) {
     match: res[1],
     last: str.substring(res.index + res[0].length)
   };
+}
+
+function loadData(message, mongo) {
+
+  return data;
+}
+
+function saveData(message, mongo) {
+
 }

@@ -8,4 +8,5 @@ module.exports = {
   processMessage: function(message, mongo, socket, io) {
     return message;
   },
+
 }
