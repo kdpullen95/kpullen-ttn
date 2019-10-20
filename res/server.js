@@ -25,7 +25,7 @@ func.setObjExpand(process.argv[6] === 't'); //6
 //CLEANUP
 process.on('exit', (code) => {
   func.log(func.prefix.default, ['beginning EXIT cleanup, code ', code]);
-  func.closeDB();
+  func.safeExit();
 });
 //END CLEANUP
 
@@ -35,28 +35,39 @@ var statloc = path.join(__dirname, "static");
 var panelList = fs.readdirSync(__dirname + "/static/panels/");
 //end TODO
 
-func.init(panelList, mongoClient, databaseName);
+initialize();
 
-//socket function
-io.on('connection', function(socket) {
-  func.log(func.prefix.socket, ['user connected']);
-  socket.on('serv', function(msg){
-    func.log(func.prefix.socket, ['received message: ', msg]);
-    msg = func.processMessage(msg, socket, io);
-    func.log(func.prefix.socket, ['sent message: ', msg]);
-    io.emit('upd', msg);
+//forces this to complete before the next using chains of awaits
+//TODO figure out if there's a cleaner way to do this.
+async function initialize() {
+  await func.init(panelList, mongoClient, databaseName);
+  func.log(func.prefix.default, 'database & panels initialization completed');
+  //the above MUST complete before any connections are accepted.
+  runServer();
+}
+
+function runServer() {
+  //socket function
+  io.on('connection', function(socket) {
+    func.log(func.prefix.socket, ['user connected']);
+    socket.on('serv', function(msg){
+      func.log(func.prefix.socket, ['received message: ', msg]);
+      msg = func.processMessage(msg, socket, io);
+      func.log(func.prefix.socket, ['sent message: ', msg]);
+      io.emit('upd', msg);
+    });
+    socket.on('disconnect', function(){
+      func.log(func.prefix.socket, ['user disconnected']);
+    });
   });
-  socket.on('disconnect', function(){
-    func.log(func.prefix.socket, ['user disconnected']);
+
+  /* Logs every connection, regardless of type, then forwards to next funcion */
+  app.use(function (req, res, next) {
+    func.log(func.prefix.express, [req.method, " for: ", req.url]);
+    next();
   });
-});
 
-/* Logs every connection, regardless of type, then forwards to next funcion */
-app.use(function (req, res, next) {
-  func.log(func.prefix.express, [req.method, " for: ", req.url]);
-  next();
-});
+  app.use(express.static(statloc));
 
-app.use(express.static(statloc));
-
-server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true))
+  server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true));
+}

@@ -2,31 +2,21 @@ var verbose = false;
 var objExpand = false;
 var funcVerbose = false;
 var mongoDB;
-var _this; //todo remove this, it's clunky.
-          //currently used to access this in functions not within the
-          //module.exports scope, 'cause I don't know a better way 
+var _this; //TODO remove this, it's clunky? But improves readability over module.exports?
 
 //****************************************************************************
 
 module.exports = {
 
+  sharedCollections: {},
+
   modFunctions: {},
 
-  init: function(panelList, mongoClient, databaseName) {
+  init: async function(panelList, mongoClient, databaseName) {
     _this = this;
-    dbStartup(mongoClient, databaseName);
-    this.log(this.prefix.function, "Loading server-side panel files...", true);
-    for (var i in panelList) {
-      try {
-        var mod = require('./static/panels/' + panelList[i] + '/server.js');
-        mod.init(this, panelList[i], mongoClient);
-        this.log(this.prefix.function, [panelList[i], " successfully initialized."], true);
-        this.modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
-                                            //on the rest of them even if try/catch is called
-      } catch (e) {
-        this.log(this.prefix.function, [panelList[i], " failed to initialize. Error: ", e]);
-      }
-    }
+    await dbStartup(mongoClient, databaseName);
+    await initSharedCollections();
+    await initPanels(panelList);
   },
 
   safeExit: function() {
@@ -108,7 +98,8 @@ module.exports = {
 
   error: function(error, exit=true) {
     this.log(this.prefix.error, [error.stack], true);
-    if (exit) process.exit();
+    if (exit) process.exitCode = 1; //TODO process.exit() might be better? need
+                                    //to observe desired behavior.
   }
 
 }
@@ -130,14 +121,44 @@ function dateline(str) {
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-function dbStartup(mongoClient, databaseName) {
-  mongoClient.connect('mongodb://localhost/' + databaseName, { useNewUrlParser: true },
-                                                                    (err, client) => {
-    if (err) throw err;
-    _this.log(_this.prefix.mongo, ["database name '", databaseName, "' connected!"]);
-    mongoDB = client.db(databaseName);
-    //todo if empty firsttimesetup
-  });
+async function initPanels(panelList) {
+  _this.log(_this.prefix.function, "Loading server-side panel files...", true);
+  for (var i in panelList) {
+    try {
+      var mod = require('./static/panels/' + panelList[i] + '/server.js');
+      compatEval(mod);
+      mod.init(_this, panelList[i], await getCollection(panelList[i]));
+      _this.log(_this.prefix.function, [panelList[i], " successfully initialized."], true);
+      _this.modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
+                                          //on the rest of them even if try/catch is called
+    } catch (e) { //TODO are there any important errors that should be let through?
+      _this.log(_this.prefix.function, [panelList[i], " failed to initialize. Error: ", e]);
+    }
+  }
+}
+
+function compatEval(mod) {
+  //TODO make compatability check reliant on docu & loop, not hardcoded
+  //TODO check for file compat too?
+  if (!(typeof mod.processMessage === "function" && typeof mod.init === "function")) {
+    var error = new Error("Module missing required functions");
+    error.code = "MODULE-NOT-COMPLIANT";
+    throw error;
+  }
+}
+
+async function initSharedCollections() {
+
+}
+
+async function dbStartup(mongoClient, databaseName) {
+  var client = await mongoClient.connect('mongodb://localhost/' + databaseName, { useNewUrlParser: true });
+  mongoDB = client.db(databaseName);
+  _this.log(_this.prefix.mongo, ["database name '", databaseName, "' connected!"]);
+}
+
+async function getCollection(type) {
+  return await mongoDB.collection(type);
 }
 
 function closeDB() {

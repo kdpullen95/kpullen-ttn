@@ -18,7 +18,7 @@ var regex = {
 module.exports = {
   name: "Chat Panel",
 
-  init: function(parent, folderName) {
+  init: function(parent, folderName, mongoCollection) {
     func = parent;
     prefix = func.prefix.function + "  (" + folderName + ")";
   },
@@ -79,8 +79,7 @@ function findRegEx(reg, str) {
 }
 
 function loadData(message, mongo) {
-
-  return data;
+  return 'TODO'; //TODO
 }
 
 function saveData(message, mongo) {
