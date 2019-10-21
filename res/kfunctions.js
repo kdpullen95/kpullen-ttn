@@ -16,7 +16,7 @@ module.exports = {
   init: async function(panelList, mongoClient, databaseName, adminPanelName) {
     _this = this;
     await dbStartup(mongoClient, databaseName);
-    initOtherCollections();
+    await initOtherCollections();
     await initPanels(panelList);
     passUserCollectionTo(adminPanelName);
   },
@@ -161,11 +161,12 @@ function compatEval(mod) {
   }
 }
 
-function initOtherCollections() {
-  sharedCollectionsTxt.forEach(function(element) {
-    _this.sharedCollections[element] = mongoDB.collection(element);
+async function initOtherCollections() {
+  await sharedCollectionsTxt.forEach(async function(element) {
+    _this.sharedCollections[element] = await mongoDB.collection(element);
   });
-  userCollection = mongoDB.collection("users");
+  userCollection = await mongoDB.collection("users");
+  _this.log(_this.prefix.mongo, ["standalone collections initialized."]);
 }
 
 function passUserCollectionTo(adminPanelName) {
