@@ -1,3 +1,3 @@
 
-node server.js boop 0 t t t 
+node server.js boop 0 adminPanel t t 
 cmd /k

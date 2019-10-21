@@ -14,12 +14,14 @@ const func = require('./kfunctions.js');
 //passport: user authentication
 const passport = require('passport');
 //end OUTSIDE UTILITIES
+
 //COMMAND-LINE OPTIONS
-const databaseName = typeof(process.argv[2]) !== 'undefined' ? process.argv[2] : 'default'; //2
+// server.js databseName port adminPanelName setVerbose setObjExpand
+const databaseName = typeof process.argv[2] !== 'undefined' ? process.argv[2] : 'default'; //2
 const port = 8090; //3 TODO
-func.setVerbose(process.argv[4] === 't'); //4
-func.setFuncVerbose(process.argv[5] === 't'); //5
-func.setObjExpand(process.argv[6] === 't'); //6
+const adminPanelName = typeof process.argv[4] !== 'undefined' ? process.argv[4] : 'adminPanel'; //4
+//below are written as ! a === 'f' so that the default if no arguments given (undef) is t
+func.setVerbosity(!(process.argv[5] === 'f'), !(process.argv[6] === 'f')); //5, 6
 //end COMMAND-LINE OPTIONS
 
 //CLEANUP
@@ -40,7 +42,7 @@ initialize();
 //forces this to complete before the next using chains of awaits
 //TODO figure out if there's a cleaner way to do this.
 async function initialize() {
-  await func.init(panelList, mongoClient, databaseName);
+  await func.init(panelList, mongoClient, databaseName, adminPanelName);
   func.log(func.prefix.default, 'database & panels initialization completed');
   //the above MUST complete before any connections are accepted.
   runServer();

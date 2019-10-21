@@ -1,10 +1,11 @@
 var verbose = false;
 var objExpand = false;
-var funcVerbose = false;
 var mongoDB;
 var _this; //TODO remove this, it's clunky? But improves readability over module.exports?
 var reqFunctions = ["init", "processMessage"]; //TODO move this to a file or something
 var sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
+var userCollection;
+var modFunctions = {};
 
 //****************************************************************************
 
@@ -12,13 +13,12 @@ module.exports = {
 
   sharedCollections: {},
 
-  modFunctions: {},
-
-  init: async function(panelList, mongoClient, databaseName) {
+  init: async function(panelList, mongoClient, databaseName, adminPanelName) {
     _this = this;
     await dbStartup(mongoClient, databaseName);
-    await initSharedCollections();
+    initOtherCollections();
     await initPanels(panelList);
+    passUserCollectionTo(adminPanelName);
   },
 
   safeExit: function() {
@@ -43,8 +43,8 @@ module.exports = {
       if (message.action && message.action === 'initPanel') {
         this.createPanel(message);
       } else
-      if (this.modFunctions[message.from.type]) {
-        message = this.modFunctions[message.from.type].processMessage(message);
+      if (modFunctions[message.from.type]) {
+        message = modFunctions[message.from.type].processMessage(message);
       }
     }
     return message;
@@ -53,6 +53,24 @@ module.exports = {
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  checkPermission: function (user, permissionCode, type) {
+    //types v - view, e - edit, c - control
+    //TODO access user collection and checks to see if they have that permission or not, boolean return
+    //permissioncodes are in the format of 'type-identifier', where the type is the type of permission
+    //and identifier is the subtype, so permission to see things flagged as 'foo' in the database would
+    //be chceked via checkPermission(userName, 'resourcePanel-flag:foo', 'v') or similar. Permissions can only
+    //be set by someone with checkPermission(user, permissionCode, 'c') for a specific code
+    return true;
+  },
+
+  setPermission: function (authUser, user, permissionCode, to) {
+    if (this.checkPermission(authUser, permissionCode, 'c')) {
+      //todo set permission of user for permissionCode to to
+    } else {
+      throw new Error("User " + authUser + " not authorized to set permissions on " + permissionCode);
+    }
+  },
 
   createPanel: function(message) {
     message.content = {};
@@ -76,22 +94,14 @@ module.exports = {
   //============================================================================
   //========================DEBUG HELPER METHODS================================
 
-  setVerbose: function(v) {
+  setVerbosity: function(v, f) {
     verbose = v;
-  },
-
-  setObjExpand: function(o) {
-    objExpand = o;
-  },
-
-  setFuncVerbose: function(v) {
-    funcVerbose = v;
+    funVerbose = f;
   },
 
   log: function(prefix, strArray, force=false) {
-    if ((!verbose && !force) ||
-        (!funcVerbose && prefix.startsWith(this.prefix.function))) return;
-    str = ''; //TODO fix the above so that force works with funcVerbose
+    if (!verbose && !force) return;
+    str = '';
     for (var s in strArray) {
       str += readify(strArray[s]);
     }
@@ -130,10 +140,10 @@ async function initPanels(panelList) {
   for (var i in panelList) {
     try {
       var mod = require('./static/panels/' + panelList[i] + '/server.js');
-      compatEval(mod);
-      mod.init(_this, panelList[i], await getCollection(panelList[i]));
+      compatEval(mod); //evaluates mod to ensure it has expected functions & files
+      mod.init(_this, panelList[i], await mongoDB.collection(panelList[i]));
       _this.log(_this.prefix.function, [panelList[i], " successfully initialized."], true);
-      _this.modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
+      modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
                                           //on the rest of them even if try/catch is called
     } catch (e) { //TODO are there any important errors that should be let through?
       _this.log(_this.prefix.function, [panelList[i], " failed to initialize. error ->"]);
@@ -147,22 +157,29 @@ function compatEval(mod) {
     if (typeof mod[element] !== "function") throw new Error("Module missing required function.");
   });
   if (false) { //TODO check for file compat
-    throw new Error("Module missing required index files.");
+    throw new Error("Panel module missing required index.html file.");
   }
 }
 
-async function initSharedCollections() {
+function initOtherCollections() {
+  sharedCollectionsTxt.forEach(function(element) {
+    _this.sharedCollections[element] = mongoDB.collection(element);
+  });
+  userCollection = mongoDB.collection("users");
+}
 
+function passUserCollectionTo(adminPanelName) {
+  if (modFunctions[adminPanelName] && typeof modFunctions[adminPanelName].setUserCollection === 'function') {
+    modFunctions[adminPanelName].setUserCollection(userCollection);
+  } else {
+    _this.log(_this.prefix.function, ["Admin panel not correctly configured or failed to load. Admin actions will not be accessible."], true);
+  }
 }
 
 async function dbStartup(mongoClient, databaseName) {
   var client = await mongoClient.connect('mongodb://localhost/' + databaseName, { useNewUrlParser: true });
   mongoDB = client.db(databaseName);
   _this.log(_this.prefix.mongo, ["database name '", databaseName, "' connected!"]);
-}
-
-async function getCollection(type) {
-  return await mongoDB.collection(type);
 }
 
 function closeDB() {
