@@ -9,7 +9,7 @@ function init(panel) {
 function putm(msg) {
   switch(msg.action) {
     case 'chatmsg':
-      addChatMessages(msg.content);
+      addChatMessage(msg.content);
       break;
     default:
       break;
@@ -36,7 +36,7 @@ function sendChatMessage() {
   var chatmsg = {};
   chatmsg.message = document.getElementById("inputBox").value;
   chatmsg.time = new Date().getTime();
-  this.panel.passm({action: 'chatmsg', content: [chatmsg], appl:[getID()]});
+  this.panel.passm({action: 'chatmsg', content: chatmsg, appl:[getID()]});
   sendingSave(chatmsg);
 }
 

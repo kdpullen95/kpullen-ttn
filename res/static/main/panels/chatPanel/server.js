@@ -1,5 +1,7 @@
 var func;
 var prefix;
+var collection;
+
 //(((((((((((((((((((((((((((((((((((((())))))))))))))))))))))))))))))))))))))
 //((((((((((((((((((((RegEx Expressions (for parsing))))))))))))))))))))))))))
 var regex = {
@@ -19,17 +21,19 @@ module.exports = {
   name: "Chat Panel",
 
   init: function(parent, folderName, mongoCollection) {
+    console.log("????????");
     func = parent;
     prefix = func.prefix.function + "  (" + folderName + ")";
+    collection = mongoCollection;
   },
 
-  processMessage: function(message, mongo, socket, io) {
+  processMessage: function(message) {
     switch(message.action) {
       case 'chatmsg':
         return parseChatMessage(message);
         break;
       case 'init':
-        return loadData(message, mongo);
+        return loadData(message);
       default:
         return message;
       }
@@ -37,14 +41,15 @@ module.exports = {
 }
 
 function parseChatMessage(message) {
-  var str = message.content[0].message;
+  var str = message.content.message;
   var newstr = '';
   var find;
   while ((find = findRegEx(regex.brackets,str)) !== null) {
     newstr += find.first + '[' + recParentheses(find.match) + ']';
     str = find.last;
   }
-  message.content[0].message = newstr + str;
+  message.content.message = newstr + str;
+  saveData(message);
   return message;
 }
 
@@ -78,10 +83,12 @@ function findRegEx(reg, str) {
   };
 }
 
-function loadData(message, mongo) {
-  return 'TODO'; //TODO
+//informal schema { id: 0, messages: [], startDate: 0, endDate: 0 }
+function saveData(message) {
+  collection.updateOne({'id': message.from.id}, {'$push': {'messages': message.content}}, {upsert: true});
 }
 
-function saveData(message, mongo) {
-
+function loadData(message) {
+  console.log(collection.find({'id': message.from.id}));
+  return 'TODO'; //TODO
 }

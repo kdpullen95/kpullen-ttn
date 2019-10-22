@@ -2,15 +2,22 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <script src="socket.io/socket.io.js"></script>
-  <script src="helper.js"></script>
-  <script src="panel.js"></script>
-  <script src="manager.js"></script>
   <link rel="stylesheet" href="css/defstyle.css" type="text/css"/>
 </head>
-<body onload="factoryStartup()">
-  <div id="panelContainer">
-
-  </div>
+<body>
+  login:
+  <form method="post">
+    <div>
+      <label for="username">username</label>
+      <input name="username" id="username">
+    </div>
+    <div>
+      <label for="password">password</label>
+      <input name="password" id="password">
+    </div>
+    <div>
+      <button>Submit</button>
+    </div>
+  </form>
 </body>
 </html>

@@ -1,5 +1,4 @@
-var verbose = false;
-var objExpand = false;
+var verbose = true;
 var mongoDB;
 var _this; //TODO remove this, it's clunky? But improves readability over module.exports?
 var reqFunctions = ["init", "processMessage"]; //TODO move this to a file or something
@@ -10,6 +9,8 @@ var modFunctions = {};
 //****************************************************************************
 
 module.exports = {
+
+  panelsList: {},
 
   sharedCollections: {},
 
@@ -72,6 +73,10 @@ module.exports = {
     }
   },
 
+  authUser: function(user, password) {
+    return true; //TODO
+  },
+
   createPanel: function(message) {
     message.content = {};
     message.content.id = message.from.id == '0' ? this.assignID(message.from.type) : message.from.id;
@@ -94,16 +99,15 @@ module.exports = {
   //============================================================================
   //========================DEBUG HELPER METHODS================================
 
-  setVerbosity: function(v, f) {
+  setVerbose: function(v) {
     verbose = v;
-    funVerbose = f;
   },
 
   log: function(prefix, strArray, force=false) {
     if (!verbose && !force) return;
     str = '';
     for (var s in strArray) {
-      str += readify(strArray[s]);
+      str += typeof strArray[s] === 'object' ? JSON.stringify(strArray[s]) : strArray[s];
     }
     console.log(dateline(prefix) + str);
   },
@@ -122,10 +126,6 @@ module.exports = {
 //============================================================================
 //========================DEBUG HELPER METHODS================================
 
-function readify(obj) {
-  return (objExpand && typeof(obj) === 'object') ? JSON.stringify(obj) : obj;
-}
-
 function dateline(str) {
   d = new Date();
   return "||" + d.toLocaleString() + "|| " + str + "  ";
@@ -137,17 +137,18 @@ function dateline(str) {
 
 async function initPanels(panelList) {
   _this.log(_this.prefix.function, "Loading server-side panel files...", true);
-  for (var i in panelList) {
+  for (var i in panelList) { //todo rewrite into foreach
     try {
-      var mod = require('./static/panels/' + panelList[i] + '/server.js');
+      var mod = require('./static/main/panels/' + panelList[i] + '/server.js');
       compatEval(mod); //evaluates mod to ensure it has expected functions & files
       mod.init(_this, panelList[i], await mongoDB.collection(panelList[i]));
       _this.log(_this.prefix.function, [panelList[i], " successfully initialized."], true);
       modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
                                           //on the rest of them even if try/catch is called
+      _this.panelsList[panelList[i]] = mod.name;
     } catch (e) { //TODO are there any important errors that should be let through?
       _this.log(_this.prefix.function, [panelList[i], " failed to initialize. error ->"]);
-      _this.error(e, false);
+      _this.error(e);
     }
   }
 }
@@ -173,7 +174,7 @@ function passUserCollectionTo(adminPanelName) {
   if (modFunctions[adminPanelName] && typeof modFunctions[adminPanelName].setUserCollection === 'function') {
     modFunctions[adminPanelName].setUserCollection(userCollection);
   } else {
-    _this.log(_this.prefix.function, ["Admin panel not correctly configured or failed to load. Admin actions will not be accessible."], true);
+    _this.log(_this.prefix.function, ["Admin panel not correctly configured, is disabled, or failed to load. Admin actions will not be accessible."], true);
   }
 }
 

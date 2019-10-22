@@ -23,7 +23,7 @@ class Panel {
   initElement() {
     this.element = document.createElement("DIV");
     var ifr = document.createElement("IFRAME");
-    ifr.setAttribute('src', "/panels/" + this.iden.type);
+    ifr.setAttribute('src', "/main/panels/" + this.iden.type);
     this.element.appendChild(ifr);
     this.element.className += " panel";
     this.element.appendChild(this.iconBar());
