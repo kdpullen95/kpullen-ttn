@@ -6,6 +6,51 @@ class Panel {
     this.iden.id = id;
   }
 
+  //todo fix repetitiveness. Is there a way to combine these that doesn't make things worse?
+  //todo is setting them directly via .onmousewhatever good practice? find out, fix
+  //fix jumping in resize/dragging (simple math issue, calculating offsets wrong currently)
+  resizing(clickLeft, clickTop) {
+    log(["start resize drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
+    document.onmouseup = () => {
+      log(["end resize drag on panel: ", this]);
+      document.onmouseup = null;
+      document.onmousemove = null;
+      this.alertResize();
+    };
+    document.onmousemove = (event) => {
+      var height = event.clientY - this.getTop();
+      var width = event.clientX - this.getLeft();
+      this.updSize(this.snapSize(width), this.snapSize(height));
+    };
+  }
+
+  dragging(clickLeft, clickTop) {
+    log(["start relocation drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
+    var offsetTop = this.getTop() - clickTop;
+    var offsetLeft = this.getLeft() - clickLeft;
+    document.onmouseup = () => {
+      log(["end relocation drag on panel: ", this]);
+      document.onmouseup = null;
+      document.onmousemove = null;
+      this.alertMove();
+    };
+    document.onmousemove = (event) => {
+      var top = offsetTop + event.clientY;
+      var left = offsetLeft + event.clientX;
+      this.updPos(this.snapPos(top), this.snapPos(left));
+    };
+  }
+
+  //TODO
+  snapSize(value) {
+    return value;
+  }
+
+  //TODO
+  snapPos(value) {
+    return value;
+  }
+
   deleteSignal() {
     this.passm({appl:[this.iden.id], action: 'removePanel'});
     this.delete();
@@ -26,11 +71,10 @@ class Panel {
     this.element.children[1].setAttribute('src', "/main/panels/" + this.iden.type);
     this.element.panel = this;
     //so that element-return DOM requests can access panel-specific//
-    this.element.children[1].panel = this; //todo fix this w/ lamda
-    this.element.children[1].onload = function() {
-      log(["iframe loaded: ", this]);
-      this.panel.passm({action: 'initPanel'});
-    }
+    this.element.children[1].onload = () => {
+      log(["iframe loaded for panel: ", this]);
+      this.passm({action: 'initPanel'});
+    };
     parent.appendChild(this.element);
   }
 
@@ -39,11 +83,11 @@ class Panel {
   }
 
   alertMove() {
-    this.passm({appl:[this.iden.id], action: 'movePanel', loc: {top: this.getTop(), left: this.getLeft()}});
+    this.passm({appl:[this.iden.id], action: 'movePanel', content: {loc: {top: this.getTop(), left: this.getLeft()}}});
   }
 
   alertResize() {
-    this.passm({appl:[this.iden.id], action: 'resizePanel', loc: {width: this.getWidth(), height: this.getHeight()}});
+    this.passm({appl:[this.iden.id], action: 'resizePanel', content: {loc: {width: this.getWidth(), height: this.getHeight()}}});
   }
 
   passm(msg) {
@@ -111,19 +155,19 @@ class Panel {
   }
 
   getTop() {
-    return this.element.style.top.parseFloat();
+    return parseInt(this.element.style.top);
   }
 
   getLeft() {
-    return this.element.style.left.parseFloat();
+    return parseInt(this.element.style.left);
   }
 
   getHeight() {
-    return this.element.style.height.parseFloat();
+    return parseInt(this.element.style.height);
   }
 
   getWidth() {
-    return this.element.style.width.parseFloat();
+    return parseInt(this.element.style.width);
   }
 
 }

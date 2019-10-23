@@ -35,3 +35,12 @@ function factoryStartup() {
   addPanel(new Panel("chatPanel", '12'));
   addPanel(new Panel());
 }
+
+function startResize(event, element) {
+  element.parentElement.panel.resizing(event.clientX, event.clientY);
+
+}
+
+function startDrag(event, element) {
+  element.parentElement.parentElement.panel.dragging(event.clientX, event.clientY);
+}

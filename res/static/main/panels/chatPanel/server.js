@@ -85,10 +85,10 @@ function findRegEx(reg, str) {
 
 //informal schema { id: 0, messages: [], startDate: 0, endDate: 0 }
 function saveData(message) {
-  collection.updateOne({'id': message.from.id}, {'$push': {'messages': message.content}}, {upsert: true});
+  //collection.updateOne({'id': message.from.id}, {'$push': {'messages': message.content}}, {upsert: true});
 }
 
 function loadData(message) {
-  console.log(collection.find({'id': message.from.id}));
+  //console.log(collection.find({'id': message.from.id}));
   return 'TODO'; //TODO
 }
