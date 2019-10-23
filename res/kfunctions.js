@@ -1,21 +1,19 @@
 var verbose = true;
 var mongoDB;
-var _this; //TODO remove this, it's clunky? But improves readability over module.exports?
-var reqFunctions = ["init", "processMessage"]; //TODO move this to a file or something
+var reqFunctions = ["init", "processMessage", "getSizeValues", "assignID"]; //TODO move this to a file or something
 var sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
 var userCollection;
-var modFunctions = {};
+var modFunctions = {}; //access to specific panels files
 
 //****************************************************************************
 
 module.exports = {
 
-  panelsList: {},
+  panelsList: {}, //list of panel names
 
   sharedCollections: {},
 
   init: async function(panelList, mongoClient, databaseName, adminPanelName) {
-    _this = this;
     await dbStartup(mongoClient, databaseName);
     await initOtherCollections();
     await initPanels(panelList);
@@ -85,14 +83,12 @@ module.exports = {
     return message;
   },
 
-  //TODO
   assignID: function(type) {
-    return Math.floor(Math.random() * 10000);
+    return modFunctions[type].assignID();
   },
 
-  //TODO
   getSizeValues: function(type, id) {
-    return {width: 400, height: 400, top: 0, left: 0};
+    return modFunctions[type].getSizeValues(id);
   },
 
   //============================================================================
@@ -116,11 +112,14 @@ module.exports = {
     var err = [error.message];
     if (stack) err.push(error.stack);
     this.log(this.prefix.error, err, true);
-    if (exit) process.exit(1);    //TODO process.exit() vs process.errorCode
+    if (exit) process.exit(1);    //TODO process.exit() vs process.errorCode?
                                       //need to gracefully exit.
   }
 
 }
+
+var _this = module.exports;
+//TODO remove this, it's clunky? But improves readability over using module.exports?
 
 //============================================================================
 //============================================================================
@@ -148,7 +147,7 @@ async function initPanels(panelList) {
       _this.panelsList[panelList[i]] = mod.name;
     } catch (e) { //TODO are there any important errors that should be let through?
       _this.log(_this.prefix.function, [panelList[i], " failed to initialize. error ->"]);
-      _this.error(e);
+      _this.error(e, false);
     }
   }
 }

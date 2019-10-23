@@ -9,6 +9,7 @@ class Panel {
   //todo fix repetitiveness. Is there a way to combine these that doesn't make things worse?
   //todo is setting them directly via .onmousewhatever good practice? find out, fix
   //fix jumping in resize/dragging (simple math issue, calculating offsets wrong currently)
+  //todo don't alert on tiny moves
   resizing(clickLeft, clickTop) {
     log(["start resize drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
     document.onmouseup = () => {
@@ -117,7 +118,7 @@ class Panel {
           //TODO - at the moment, if you spawn another window of the same type
           //before the other one has received the panelInit response, they
           //might get confused and both end up with the same ID
-          //low priority: difficult to cause, few downsides.
+          //low priority: difficult to cause, few downsides (you just delete the dup)
         } else if (msg.action == 'initPanel' && msg.content.type == this.iden.type
                           && (this.iden.id == '0' || msg.content.id == this.iden.id)) {
           this.updID(msg.content.id);

@@ -1,8 +1,9 @@
 var func;
 var prefix;
+var idcycle = 1;
 
 module.exports = {
-  name: "Launch Panel",
+  name: "Launch Panel", //human readable name
 
   init: function(parent, folderName, collection) {
     func = parent; //access shared functions, like "log", and values like panelsList
@@ -19,4 +20,14 @@ module.exports = {
     }
     return message;
   },
+
+  getSizeValues: function(id) { //no database data means always default size
+    return {width: 300, height: 200, top: 50, left: 50};
+  },
+
+  assignID: function() {
+    return idcycle++; //todo maybe less lazy
+    //but since nothing gets saved to the database with this panel
+    //which means all of them get destroyed on server restart anyway...
+  }
 }

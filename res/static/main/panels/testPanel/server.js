@@ -9,4 +9,12 @@ module.exports = {
     return message;
   },
 
+  getSizeValues: function(id) { //TODO
+    return {width: 400, height: 400, top: 0, left: 0}; //int pixels
+  },
+
+  assignID: function() { //TODO
+    return Math.floor(Math.random() * 10000);
+  }
+
 }

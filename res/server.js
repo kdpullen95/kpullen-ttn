@@ -1,19 +1,22 @@
 //OUTSIDE UTILITIES
-//express, app: expressjs server stuff
+//  post/get server for login and static resources, like panels before init
 const express = require('express');
 const app = express();
-const path = require('path');
-//mongo: storing files, users
-const mongoClient = require('mongodb').MongoClient;
-const util = require('util');
 const server = require('http').Server(app);
+//  passport: user authentication?
+//const passport = require('passport');
+//  socket.io for SPA page
 const io = require('socket.io')(server);
+//  mongo: storing files, users
+const mongoClient = require('mongodb').MongoClient;
+//  misc for loading and accessing files
+const util = require('util');
 const fs = require('fs');
-//func: logging and message handling
-const func = require('./kfunctions.js');
-//passport: user authentication
-const passport = require('passport');
+const path = require('path');
 //end OUTSIDE UTILITIES
+
+//  func: logging, message handling, panel init
+const func = require('./kfunctions.js');
 
 //COMMAND-LINE OPTIONS
 // server.js databseName port adminPanelName setVerbose setObjExpand
@@ -29,7 +32,7 @@ process.on('exit', (code) => {
   func.log(func.prefix.default, ['beginning EXIT cleanup, code ', code]);
   func.safeExit();
 });
-//END CLEANUP
+//end CLEANUP
 
 //TODO - at some point, this block will be moved to the C++ executable
 //why: security. then panelList will be part of command-line options
@@ -38,16 +41,17 @@ var panelList = fs.readdirSync(__dirname + "/static/main/panels/");
 var activeUsers = {};
 //end TODO
 
+//INITIALIZATION
 initialize();
-
-//forces this to complete before the next using chains of awaits
-//TODO figure out if there's a cleaner way to do this.
+//forces this to complete before the server is open for business using chains of awaits
+//todo probably could turn this last one into a callback instead
 async function initialize() {
   await func.init(panelList, mongoClient, databaseName, adminPanelName);
   func.log(func.prefix.default, 'database & panels initialization completed');
   //the above MUST complete before any connections are accepted.
   runServer();
 }
+//end INITIALIZATION
 
 function runServer() {
   //socket function
@@ -96,6 +100,6 @@ function runServer() {
   server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true));
 }
 
-function addJWTUserKey(user) {
+function addJWTUserKey(user) { //ignore
   activeUsers[user] = Math.random() * 10000 + '***' + user + '***' + Math.random() * 10000;
 }

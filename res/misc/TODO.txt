@@ -1,0 +1,22 @@
+rating system from + to +++++
+- for solution ideas
+
+Before 10/28
+++++ Installation and run .bats for any modern windows
+++ Instructions for manual install
+++ Super basic canvas implementation
++++ Make dragging/resizing stop sticking
+      - put a high z-level invisible thing over the iframe portion while moving so that it doesn't stick when mouse is over that area
+
+Before 11/10
++++++ Finish regex & math for chatPanel
+++++ Visual polish
++++++ User logins (insecure)
++++++ User permissions
++++++ Templates for custom panels, instructions
++++ Security (JWT for sockets, proper for login)
++++ Canvas improvements (most flashy panel by far)
++++++ Database saving & loading for chatpanel & panel positions/loaded panels
++++ Selective sync/discrete panel movement/resize
+    + depending on individual panel settings & user settings
+    +++ depending on panel type
