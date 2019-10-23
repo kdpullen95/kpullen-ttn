@@ -7,6 +7,15 @@
   <script src="panel.js"></script>
   <script src="manager.js"></script>
   <link rel="stylesheet" href="../css/defstyle.css" type="text/css"/>
+  <template id="panelTemplate">
+    <div class="panel hidden">
+      <div class="iconBar">
+        <img class="dragIcon icon" src="icons/dragIcon.jpg" onmousedown="startDrag(this)"/>
+      </div>
+      <iframe></iframe>
+      <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(this)"/>
+    </div>
+  </template>
 </head>
 <body onload="factoryStartup()">
   <div id="panelContainer">

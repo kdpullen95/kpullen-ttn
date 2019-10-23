@@ -20,37 +20,22 @@ class Panel {
     addPanel(new Panel(type, id));
   }
 
-  initElement() {
-    this.element = document.createElement("DIV");
-    var ifr = document.createElement("IFRAME");
-    ifr.setAttribute('src', "/main/panels/" + this.iden.type);
-    this.element.appendChild(ifr);
-    this.element.className += " panel";
-    this.element.appendChild(this.iconBar());
+  initElement(parent) {
+    var template = document.getElementById("panelTemplate");
+    this.element = document.importNode(template.content, true).firstElementChild;
+    this.element.children[1].setAttribute('src', "/main/panels/" + this.iden.type);
     this.element.panel = this;
-    this.setLoadingMode(true);
-      //so that element-return DOM requests can access panel-specific//
-    this.updSize(400, 200);
-    ifr.panel = this;
-    ifr.onload = function() {
+    //so that element-return DOM requests can access panel-specific//
+    this.element.children[1].panel = this; //todo fix this w/ lamda
+    this.element.children[1].onload = function() {
       log(["iframe loaded: ", this]);
       this.panel.passm({action: 'initPanel'});
-      //TODO figure out how to pass panel without assigning it to iframe
-      //TODO it's some kind of nested "immediate function" thing
     }
+    parent.appendChild(this.element);
   }
 
   setLoadingMode(set) {
     //TODO visual flair
-  }
-
-  iconBar() {
-    var iconBar = document.createElement("DIV");
-    iconBar.className += " iconBar";
-    var moveIcon = document.createElement("IMG");
-    moveIcon.url = "nothing";
-    iconBar.appendChild(moveIcon);
-    return iconBar;
   }
 
   alertMove() {
@@ -94,7 +79,7 @@ class Panel {
           this.updID(msg.content.id);
           this.updPos(msg.content.loc.top, msg.content.loc.left);
           this.updSize(msg.content.loc.width, msg.content.loc.height);
-          this.element.children[0].contentWindow.init(this);
+          this.element.children[1].contentWindow.init(this);
       }
     }
   }

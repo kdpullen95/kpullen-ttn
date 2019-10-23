@@ -23,8 +23,7 @@ function sendm(mes) {
 function addPanel(panel, to="panelContainer") {
   log(['adding panel: ', panel]);
   panelArray.push(panel);
-  panel.initElement();
-  document.getElementById(to).appendChild(panel.element);
+  panel.initElement(document.getElementById(to));
 }
 
 function removePanel() {
