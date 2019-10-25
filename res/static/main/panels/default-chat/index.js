@@ -3,17 +3,27 @@ var panel;
 function init(panel) {
   this.panel = panel;
   this.panel.assignChild(this);
-  this.panel.passm({action: 'init', appl:[getID()]});
+  this.panel.buildMessageAndSend('init');
 }
 
-function putm(msg) {
+function passMessageOn(msg) {
   switch(msg.action) {
+    case 'affirm':
+      removePending(msg.content);
     case 'chatmsg':
       addChatMessage(msg.content);
       break;
-    default:
+    case 'initTODO':
+      //todo
+      addChatMessages(msg.content);
       break;
+    default:
   }
+}
+
+function removePending(chatmsg) {
+  var message = document.getElementById(chatmsg.time);
+  message.parentNode.removeChild(message);
 }
 
 function addChatMessages(array) {
@@ -22,13 +32,20 @@ function addChatMessages(array) {
   }
 }
 
-function addChatMessage(chatmsg) {
+function addChatMessage(chatmsg, pending=false) {
+  //TODO options for displaying things
   var str = '[';
   str += chatmsg.time;
   str += ' ' + chatmsg.user + ']: ';
   str += chatmsg.message;
-  var div = document.getElementById("chatBox");
-  div.appendChild(document.createTextNode(str));
+  var div = document.createElement("DIV");
+  document.getElementById("chatBox").appendChild(div);
+  if (pending) {
+    div.classList.add('pendingMessage');
+    div.id = chatmsg.time;
+  }
+  var node = document.createTextNode(str);
+  div.appendChild(node);
   div.appendChild(document.createElement("HR"));
 }
 
@@ -36,13 +53,13 @@ function sendChatMessage() {
   var chatmsg = {};
   chatmsg.message = document.getElementById("inputBox").value;
   chatmsg.time = new Date().getTime();
-  this.panel.passm({action: 'chatmsg', content: chatmsg, appl:[getID()]});
+  //todo figure out how to skip/pass values by equality?
+  this.panel.buildMessageAndSend('chatmsg', [this.panel.getIdentification()], chatmsg);
   sendingSave(chatmsg);
 }
 
 function sendingSave(chatmsg) {
-  //TODO save the message temporary redtext
-  //TODO confirm that message was printed
+  addChatMessage(chatmsg, true);
   document.getElementById("inputBox").value = '';
 }
 
@@ -51,9 +68,4 @@ function chatEnterCheck(e) {
     if (code == 13) { //Enter keycode
         sendChatMessage();
     }
-}
-
-//grabs ID from panel
-function getID() {
-  return this.panel.getID();
 }

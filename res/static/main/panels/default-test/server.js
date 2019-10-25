@@ -5,8 +5,8 @@ module.exports = {
 
   },
 
-  processMessage: function(message, mongo, socket, io) {
-    return message;
+  processMessage: function(message) {
+    return [{message: message, emitType: 'all'}];
   },
 
   getSizeValues: function(id) { //TODO

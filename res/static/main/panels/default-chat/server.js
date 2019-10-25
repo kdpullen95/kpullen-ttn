@@ -26,6 +26,8 @@ module.exports = {
     collection = mongoCollection;
   },
 
+  //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
+  ////emit types: sender, all, allExceptSender
   processMessage: function(message) {
     switch(message.action) {
       case 'chatmsg':
@@ -34,7 +36,7 @@ module.exports = {
       case 'init':
         return loadData(message);
       default:
-        return message;
+        return [{message: message, emitType: 'all'}];
       }
   },
 
@@ -57,7 +59,9 @@ function parseChatMessage(message) {
   }
   message.content.message = newstr + str;
   saveData(message);
-  return message;
+  var affirm = func.shallowClone(message);
+  affirm.action = "affirm";
+  return [{message: affirm, emitType: 'sender'}, {message: message, emitType: 'allExceptSender'}];
 }
 
 function recParentheses(str) {
@@ -97,5 +101,5 @@ function saveData(message) {
 
 function loadData(message) {
   //console.log(collection.find({'id': message.from.id}));
-  return 'TODO'; //TODO
+  return [{message: 'TODO', emitType: 'sender'}]; //TODO
 }

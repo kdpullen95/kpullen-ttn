@@ -12,14 +12,13 @@
       <div class="iconBar">
         <img class="dragIcon icon" src="icons/dragIcon.jpg" onmousedown="startDrag(event, this)"/>
       </div>
-      <iframe></iframe>
+      <iframe class="iframePanel"></iframe>
       <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(event, this)"/>
     </div>
   </template>
 </head>
 <body onload="factoryStartup()">
-  <div id="panelContainer">
-
-  </div>
+  <div id="overlay"> </div>
+  <div id="panelContainer"> </div>
 </body>
 </html>

@@ -3,10 +3,10 @@ var panel;
 function init(panel) {
   this.panel = panel;
   this.panel.assignChild(this);
-  this.panel.passm({action: 'init', appl:[getID()]});
+  this.panel.buildMessageAndSend('init');
 }
 
-function putm(msg) {
+function passMessageOn(msg) {
   switch(msg.action) {
     case 'init':
       populatePanels(msg.content);
@@ -27,11 +27,6 @@ function populatePanels(panelArray) {
 }
 
 function submitSelection() {
-  this.panel.createNew(document.getElementById('panelSelect').value);
+  this.panel.createNew(document.getElementById('panelSelect').value, true);
   this.panel.delete();
-}
-
-//grabs ID from panel
-function getID() {
-  return this.panel.getID();
 }

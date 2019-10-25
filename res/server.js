@@ -57,14 +57,13 @@ function runServer() {
   //socket function
   io.on('connection', function(socket) {
     func.log(func.prefix.socket, ['user connected']);
-    socket.on('serv', function(msg){
-      func.log(func.prefix.socket, ['received message: ', msg]);
+    socket.on('serv', function(message){
+      func.log(func.prefix.socket, ['received message: ', message]);
       try {
-        msg = func.processMessage(msg, socket, io);
-        func.log(func.prefix.socket, ['sent message: ', msg]);
-        io.emit('upd', msg);
+        messageCollection = func.processMessage(message);
+        sendResponses(messageCollection, socket, io);
       } catch (e) {
-        func.log(func.prefix.socket, ['error processing or sending message: ', msg, '. error ->']);
+        func.log(func.prefix.socket, ['error processing message: ', message, '. error ->']);
         func.error(e);
       }
     });
@@ -98,6 +97,30 @@ function runServer() {
   });
 
   server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true));
+}
+
+
+//messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
+////emit types: sender, all, allExceptSender
+function sendResponses(messageCollection, socket, io) {
+  messageCollection.forEach( (messagePair) => {
+    func.log(func.prefix.socket, ['sending message: ', messagePair]);
+    switch(messagePair.emitType) {
+      case 'sender':
+        socket.emit('res', messagePair.message);
+        break;
+      case 'all':
+        io.emit('res', messagePair.message);
+        break;
+      case 'allExceptSender':
+        socket.broadcast.emit('res', messagePair.message);
+        break;
+      case 'individualUsers':
+        break; //todo awaiting fancy socket-user-key array
+      default:
+        break;
+    }
+  });
 }
 
 function addJWTUserKey(user) { //ignore

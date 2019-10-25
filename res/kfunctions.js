@@ -37,16 +37,17 @@ module.exports = {
   //****************************************************************************
   //*********************MESSAGE PROCESSING & RESPONSE**************************
 
+  //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
+  ////emit types: sender, all, allExceptSender
   processMessage: function(message, socket, io) {
     if (message.from && message.from.type) {
       if (message.action && message.action === 'initPanel') {
-        this.createPanel(message);
+        return this.createPanel(message);
       } else
       if (modFunctions[message.from.type]) {
-        message = modFunctions[message.from.type].processMessage(message);
+        return modFunctions[message.from.type].processMessage(message);
       }
     }
-    return message;
   },
 
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -76,11 +77,17 @@ module.exports = {
   },
 
   createPanel: function(message) {
-    message.content = {};
-    message.content.id = message.from.id == '0' ? this.assignID(message.from.type) : message.from.id;
+    var messageCollection = [];
+    var signal = message.content.signal && message.from.type !== 'launchPanel'; //todo allow panels to self-report their default creation visibility
+    message.content = { id: message.from.id.toString().startsWith('DEFAULTID') ? this.assignID(message.from.type) : message.from.id,
+                        type: message.from.type };
     message.content.loc = this.getSizeValues(message.from.type, message.content.id);
-    message.content.type = message.from.type;
-    return message;
+    messageCollection[0] = {message: message, emitType: 'sender'};
+    if (signal) {
+      messageCollection[1] = {message: this.shallowClone(message), emitType: 'allExceptSender'};
+      messageCollection[1].message.action = "createPanel";
+    }
+    return messageCollection;
   },
 
   assignID: function(type) {
@@ -93,7 +100,14 @@ module.exports = {
 
   //============================================================================
   //============================================================================
-  //========================DEBUG HELPER METHODS================================
+  //========================DEBUG & HELPER METHODS==============================
+  shallowClone: function(obj) {
+    return Object.assign({}, obj);
+  },
+
+  deepClone: function(obj) {
+    return 'TODO'; //TODO
+  },
 
   setVerbose: function(v) {
     verbose = v;

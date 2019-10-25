@@ -1,11 +1,16 @@
 var panelArray = [];
 var socket = io();
+var defaultIDNum = 1;
 
-socket.on('upd', function (msg) {
+socket.on('res', function (msg) {
   log(['received message: ', msg]);
-  panelArray.forEach(function(panel) {
-    panel.putm(msg);
-  });
+  if (msg.action === 'createPanel') {
+    addPanel(new Panel(msg.content.type, msg.content.id), false);
+  } else {
+    panelArray.forEach(function(panel) {
+      panel.passMessageOn(msg);
+    });
+  }
 });
 
 function startup() {
@@ -15,15 +20,19 @@ function startup() {
   //let initElement do the rest
 }
 
-function sendm(mes) {
+function sendMessageToServer(mes) {
   log(['sending message: ', mes]);
   socket.emit('serv', mes);
 }
 
-function addPanel(panel, to="panelContainer") {
+function getDefaultID() {
+  return "DEFAULTID" + defaultIDNum++;
+}
+
+function addPanel(panel, signal) {
   log(['adding panel: ', panel]);
   panelArray.push(panel);
-  panel.initElement(document.getElementById(to));
+  panel.initElement(document.getElementById("panelContainer"), signal);
 }
 
 function removePanel() {
@@ -31,9 +40,8 @@ function removePanel() {
 }
 
 function factoryStartup() {
-  addPanel(new Panel("testPanel", '11'));
-  addPanel(new Panel("chatPanel", '12'));
-  addPanel(new Panel());
+  addPanel(new Panel(), false);
+  addPanel(new Panel(), false);
 }
 
 function startResize(event, element) {

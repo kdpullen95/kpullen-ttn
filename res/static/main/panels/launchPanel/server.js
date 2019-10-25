@@ -18,7 +18,7 @@ module.exports = {
       });
       message.content = panelList;
     }
-    return message;
+    return [{message: message, emitType: 'sender'}];
   },
 
   getSizeValues: function(id) { //no database data means always default size
