@@ -10,11 +10,11 @@ function passMessageOn(msg) {
   switch(msg.action) {
     case 'affirm':
       removePending(msg.content);
-    case 'draw':
-      addElement(msg.content);
+    case 'create':
+      createElement(msg.content);
       break;
-    case 'erase':
-      removeElement(msg.content);
+    case 'delete':
+      deleteElement(msg.content);
       break;
     case 'update':
       updateElement(msg.content);
@@ -82,15 +82,33 @@ function initializeCanvas(id) {
 
   c.fabric.on("object:modified", function(e) { userUpdateElement(e.target); });
   c.fabric.on("object:added", function(e) { userCreateElement(e.target); });
+  c.fabric.on("object:removed", function(e) { userDeleteElement(e.target); });
   return c.fabric;
 }
 
+function initializeElement(object) {
+  //put any init stuff here
+}
+
 function userUpdateElement(object) {
-  console.log(object);
+  var message = {};
+  message.object = object.toJSON(["id"]);
+  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
 }
 
 function userCreateElement(object) {
-  console.log(object);
+  initializeElement(object);
+  var message = {};
+  object.id = new Date().getTime(); //todo make this a more robust id
+  message.object = JSON.stringify(object);
+  message.to = 'default'; //todo get actual id
+  this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
+}
+
+function userDeleteElement(object) {
+  var message = {};
+  message.objectID = object.id;
+  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
 }
 
 function alertPanelChange() {
@@ -109,15 +127,18 @@ function removePending(content) {
 
 }
 
-function addElement(content) {
+function createElement(content) {
+  return; //todo why 
+  fabric.util.enlivenObjects([content.object], (objects) => {
+    canvasArray[content.to].add(objects[0]);
+  });
+}
+
+function deleteElement(content) {
 
 }
 
-function removeElement(content) {
-
-}
-
-function moveElement(content) {
+function updateElement(content) {
 
 }
 

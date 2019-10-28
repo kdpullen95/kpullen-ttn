@@ -20,7 +20,7 @@ module.exports = {
       case 'update':
         saveData(message);
       default:
-        return [{message: message, emitType: 'all'}];
+        return [{message: message, emitType: 'allExceptSender'}];
       }
   },
 
