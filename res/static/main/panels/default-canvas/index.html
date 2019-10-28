@@ -3,9 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <script src="index.js"></script>
+  <script src="../../../oss/fabric.min.js"></script>
+  <link rel="stylesheet" href="../../../css/defstyle.css" type="text/css"/>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+  <template id="canvasTemplate">
+    <div class="indivCanvas">
+      <div class="canvasBar">
+        <img class="optionsFreeDraw icon" src="icons/optionsFreeDraw.png" onmousedown="optionsFreeDraw(event, this)" />
+        <img class="optionsCreateShape icon" src="icons/optionsCreateShape.png" onmousedown="optionsCreateShape(event, this)"/>
+        <img class="optionsLineColor icon" src="icons/optionsLineColor.png" onmousedown="optionsLineColor(event, this)" />
+        <img class="optionsFillColor icon" src="icons/optionsFillColor.png" onmousedown="optionsFillColor(event, this)" />
+        <img class="optionsMouse icon" src="icons/optionsMouse.png" onmousedown="optionsMouse(event, this)" />
+        <img class="optionsPan icon" src="icons/optionsPan.png" onmousedown="optionsPan(event, this)"  />
+      </div>
+      <div class="canvasContainer"><canvas></canvas></div>
+    </div>
+  </template>
 </head>
-<body>
-  <div id="canvas">
+<body class="interiorPanel">
+  <div id="canvasesContainer">
   </div>
 </body>
 </html>

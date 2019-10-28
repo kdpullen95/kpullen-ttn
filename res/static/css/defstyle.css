@@ -3,6 +3,10 @@
   overflow: hidden;
   background: white;
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
 }
 
 .interiorPanel {
@@ -11,17 +15,15 @@
 }
 
 .iframePanel {
-  height: 98%;
-  width: 98%;
+  flex-grow: 1;
+  width: 100%;
 }
 
 .iconBar {
-  background: cyan;
-  position: absolute;
-  top: 0px;
-  right: 0px;
+  background: lightseagreen;
   width: 100%;
-  height: 10px;
+  height: 15px;
+  flex-grow: 0;
 }
 
 .resizeIcon {

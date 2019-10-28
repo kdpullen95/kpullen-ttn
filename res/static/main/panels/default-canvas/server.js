@@ -15,8 +15,12 @@ module.exports = {
     switch(message.action) {
       case 'init':
         return loadData(message);
+      case 'draw':
+      case 'erase':
+      case 'update':
+        saveData(message);
       default:
-        return message;
+        return [{message: message, emitType: 'all'}];
       }
   },
 
@@ -25,10 +29,15 @@ module.exports = {
   },
 
   assignID: function() {
-    return Math.floor(Math.random() * 10000);
+    return Math.floor(Math.random() * 10000); //use mongodb objid
   }
 }
 
 function loadData(message) {
-  return 'TODO'; //todo
+  return [{message: message, emitType: 'sender'}]; //TODO
+}
+
+function saveData(message) {
+  //todo //put message data over other message data ie a message of x, y
+  //will be put over the object's x, y, rotate, but only replace x, y
 }

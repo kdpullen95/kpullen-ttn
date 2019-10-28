@@ -149,7 +149,7 @@ class Panel {
           this.updSize(msg.content.loc.width, msg.content.loc.height);
           break;
         default: //otherwise passes it on to the child to figure out //todo function check on server init instead?
-          if (this.child && typeof(this.child.passMessageOn) === "function") {
+          if (this.child && typeof this.child.passMessageOn === "function") {
             this.child.passMessageOn(msg);
           }
           break;
@@ -159,16 +159,24 @@ class Panel {
 
   //############GET/SET##################
 
+  alertChildtoChange() {
+    if (this.child && typeof this.child.alertPanelChange === "function") {
+      this.child.alertPanelChange();
+    }
+  }
+
   updPos(top, left) {
     log(["updating position of panel to " + top + " " + left + " for: ", this.iden]);
     this.element.style.top = top + "px";
     this.element.style.left = left + "px";
+    this.alertChildtoChange();
   }
 
   updSize(width, height) {
     log(["updating size of panel to " + width + " " + height + " for: ", this.iden]);
     this.element.style.width = width + "px";
     this.element.style.height = height + "px";
+    this.alertChildtoChange();
   }
 
   assignChild(child) {

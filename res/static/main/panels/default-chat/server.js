@@ -32,10 +32,9 @@ module.exports = {
     switch(message.action) {
       case 'chatmsg':
         return parseChatMessage(message);
-        break;
       case 'init':
         return loadData(message);
-      default:
+      default: //todo remove?
         return [{message: message, emitType: 'all'}];
       }
   },

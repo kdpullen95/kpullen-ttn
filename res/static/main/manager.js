@@ -35,13 +35,12 @@ function addPanel(panel, signal) {
   panel.initElement(document.getElementById("panelContainer"), signal);
 }
 
-function removePanel() {
-  //TODO TODO TODO TODO TODO NO BLOAT/MEMORY LEAK
+function addNewPanel() { //
+  addPanel(new Panel(), false);
 }
 
-function factoryStartup() {
-  addPanel(new Panel(), false);
-  addPanel(new Panel(), false);
+function removePanel() {
+  //TODO TODO TODO TODO TODO NO BLOAT/MEMORY LEAK
 }
 
 function startResize(event, element) {
