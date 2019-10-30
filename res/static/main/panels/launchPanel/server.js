@@ -10,13 +10,11 @@ module.exports = {
     prefix = func.prefix.function + "  (" + folderName + ")"; //matches log conventions
   },
 
-  processMessage: function(message) {
+  processMessage: async function(message) {
     if (message.action === "init") {
-      var panelList = [];
-      Object.keys(func.panelsList).forEach(function (key) {
-        panelList.push([key, func.panelsList[key]]);
-      });
-      message.content = panelList;
+      message.content = {};
+      message.content.panels = func.panelsList;
+      message.content.databasePanels = await func.getSavedPanels(message);
     }
     return [{message: message, emitType: 'sender'}];
   },
@@ -33,5 +31,9 @@ module.exports = {
 
   signalVisibility: function(message) {
     return false;
+  },
+   
+  getSavedPanels: function(message) {
+    return [];
   }
 }

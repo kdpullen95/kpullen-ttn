@@ -1,6 +1,6 @@
 var verbose = true;
 var mongoDB;
-const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility"]; //TODO move this to a file or something
+const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility", "getSavedPanels"]; //TODO move this to a file or something
 const sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
 var userCollection;
 var modFunctions = {}; //access to specific panels files
@@ -37,20 +37,22 @@ module.exports = {
 
   //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
   ////emit types: sender, all, allExceptSender
-  processMessage: function(message, socket, io) {
+  processMessage: async function(message, socket, io) {
     if (message.from && message.from.type && message.action) {
       switch (message.action) {
         case 'synchronize':
           return synchronizeState();
+        case 'loadPanel':
+          return setLoadToCreate(message);
         case 'createPanel':
-          return affirmAndPassOn(this.assignValues(message));;
+          return affirmAndPassOn(this.assignValues(message));
         case 'movePanel':
         case 'resizePanel':
         case 'closePanel':
             return affirmAndPassOn(message);
         default:
           if (modFunctions[message.from.type])
-            return modFunctions[message.from.type].processMessage(message);
+            return await modFunctions[message.from.type].processMessage(message);
       }
     }
     throw new Error("Message improperly formatted.")
@@ -95,6 +97,18 @@ module.exports = {
 
   getSizeValues: function(type, id) {
     return modFunctions[type].getSizeValues(id);
+  },
+
+  getSavedPanels: async function(message) {
+    var co = {};
+    var keyArray = Object.keys(this.panelsList);
+    for (var i = 0; i < keyArray.length; i++) {
+      co[keyArray[i]] = await modFunctions[keyArray[i]].getSavedPanels(message);
+    }
+    // Object.keys(this.panelsList).forEach(function (key) {
+    //   co[key] = await modFunctions[key].getSavedPanels();
+    // });    //is there a way to easily await all of these?
+    return co;
   },
 
   //============================================================================
@@ -216,6 +230,17 @@ function affirmAndPassOn(message) {
   message.affirm = true;
   messageCollection[0] = {message: message, emitType: 'sender'};
   return messageCollection;
+}
+
+//not the most elegant solution...
+function setLoadToCreate(message) {
+  message.action = "createPanel";
+  message.content.loc = _this.getSizeValues(message.content.type, message.content.id);
+  if (modFunctions[message.from.type].signalVisibility(message)) {
+    return [{message: message, emitType: 'sender'}];
+  }
+  updateState(message);
+  return [{message: message, emitType: 'all'}];
 }
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

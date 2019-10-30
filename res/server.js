@@ -57,10 +57,10 @@ function runServer() {
   //socket function
   io.on('connection', function(socket) {
     func.log(func.prefix.socket, ['user connected']);
-    socket.on('serv', function(message){
+    socket.on('serv', async function(message){
       func.log(func.prefix.socket, ['received message: ', message]);
       try {
-        messageCollection = func.processMessage(message);
+        messageCollection = await func.processMessage(message);
         sendResponses(messageCollection, socket, io);
       } catch (e) {
         func.log(func.prefix.socket, ['error processing message: ', message, '. error ->']);

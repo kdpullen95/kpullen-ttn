@@ -79,6 +79,10 @@ class Panel {
     addPanel(new Panel(type));
   }
 
+  loadPanel(type, id) {
+    this.buildMessageAndSend('loadPanel', [this.iden], {id: id, type: type});
+  }
+
   initElement(parent, content) {
     var template = document.getElementById("panelTemplate");
     this.element = document.importNode(template.content, true).firstElementChild;

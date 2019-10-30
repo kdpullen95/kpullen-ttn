@@ -6,9 +6,15 @@
 </head>
 <body>
   <div id="selections">
-    <select id="panelSelect">
-    </select>
-    <button onclick="submitSelection();">Submit</button>
+    <select id="panelSelect" onchange="updateOptions()"></select>
+    <input type="text" id="search" placeholder="search..." oninput="runSearch()"/>
+    <div id="loadWhich">
+
+    </div>
+    <div>
+      <input type="text" id="readableName" placeholder"custom name..." />
+    </div>
+    <button onclick="submitSelection()">Submit</button>
   </div>
 </body>
 </html>

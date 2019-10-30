@@ -35,7 +35,7 @@ module.exports = {
     return true;
   },
 
-  launchSelections: function(message) {
-    return "DEFAULT"; //TODO!!
+  getSavedPanels: function(message) {
+    return []; //or array of [human readable name, id] pairs
   }
 }

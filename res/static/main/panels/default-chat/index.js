@@ -13,8 +13,7 @@ function passMessageOn(msg) {
     case 'chatmsg':
       addChatMessage(msg.content);
       break;
-    case 'initTODO':
-      //todo
+    case 'init':
       addChatMessages(msg.content);
       break;
     default:

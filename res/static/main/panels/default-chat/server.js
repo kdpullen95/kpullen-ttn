@@ -1,6 +1,7 @@
 var func;
 var prefix;
 var collection;
+var ObjectID = require('mongodb').ObjectID;
 
 //(((((((((((((((((((((((((((((((((((((())))))))))))))))))))))))))))))))))))))
 //((((((((((((((((((((RegEx Expressions (for parsing))))))))))))))))))))))))))
@@ -28,12 +29,12 @@ module.exports = {
 
   //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
   ////emit types: sender, all, allExceptSender
-  processMessage: function(message) {
+  processMessage: async function(message) {
     switch(message.action) {
       case 'chatmsg':
         return parseChatMessage(message);
       case 'init':
-        return loadData(message);
+        return await loadData(message);
       default: //todo remove?
         return [{message: message, emitType: 'all'}];
       }
@@ -44,11 +45,20 @@ module.exports = {
   },
 
   assignID: function() { //TODO
-    return Math.floor(Math.random() * 10000);
+    return new ObjectID().toHexString();
   },
 
   signalVisibility: function(message) {
     return true;
+  },
+
+  getSavedPanels: async function(message) {
+    var pairArray = [];
+    var array = await collection.find({}).toArray(); //todo query only specific fields ffs
+    array.forEach((doc) => {
+      pairArray.push([doc._id, doc._id]); //no human readable names atm
+    });
+    return pairArray;
   }
 }
 
@@ -97,12 +107,16 @@ function findRegEx(reg, str) {
   };
 }
 
-//informal schema { id: 0, messages: [], startDate: 0, endDate: 0 }
+//informal schema { id: 0, messages: [], startDate: 0, endDate: 0 } ?
 function saveData(message) {
-  //collection.updateOne({'id': message.from.id}, {'$push': {'messages': message.content}}, {upsert: true});
+  collection.updateOne( {'_id': message.from.id},
+                        {'$push': {'messages': message.content}},
+                        {upsert: true},
+                        () => {}  );
 }
 
-function loadData(message) {
-  //console.log(collection.find({'id': message.from.id}));
-  return [{message: 'TODO', emitType: 'sender'}]; //TODO
+async function loadData(message) {
+  var doc = await collection.findOne({'_id': message.from.id});
+  message.content = doc.messages;
+  return [{ message: message, emitType: 'sender'}]; //TODO
 }

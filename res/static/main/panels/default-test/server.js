@@ -19,6 +19,10 @@ module.exports = {
 
   signalVisibility: function(message) {
     return true;
+  },
+
+  getSavedPanels: function(message) {
+    return [];
   }
 
 }
