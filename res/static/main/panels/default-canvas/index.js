@@ -35,6 +35,102 @@ function initializeCanvases(content) {
   alertPanelChange();
 }
 
+function initializeElement(object) {
+  //put any init stuff here
+}
+
+function userUpdateElement(object) {
+  var message = {};
+  message.object = object.toJSON(["id"]);
+  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
+}
+
+function userCreateElement(object) {
+  if (object.proppedFlag) return;
+  initializeElement(object);
+  var message = {};
+  object.id = new Date().getTime(); //todo make this a more robust id
+  message.object = object.toJSON(["id"]);
+  message.to = 'default'; //todo get actual id
+  this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
+}
+
+function userDeleteElement(object) {
+  var message = {};
+  message.objectID = object.id;
+  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
+}
+
+function alertPanelChange() {
+  for (var key in canvasArray) {
+    canvasArray[key].setHeight(this.panel.getHeight());
+    canvasArray[key].setWidth(this.panel.getWidth());
+    canvasArray[key].renderAll();
+  }
+}
+
+function addPending(content) {
+
+}
+
+function removePending(content) {
+
+}
+
+function createElement(content) {
+  return;
+  fabric.util.enlivenObjects([content.object], function(objects) {
+    objects[0].proppedFlag = true;
+    canvasArray[content.to].add(objects[0]);
+    canvasArray[content.to].renderAll();
+  });
+}
+
+function deleteElement(content) {
+
+}
+
+function updateElement(content) {
+
+}
+
+function optionsFreeDraw(event, ele) {
+  var canvas = getCanvas(ele);
+  clearOptionsSelection(canvas);
+  canvas.isDrawingMode = true;
+}
+
+function optionsCreateShape(event, ele) {
+
+}
+
+function optionsLineColor(event, ele) {
+
+}
+
+function optionsFillColor(event, ele) {
+
+}
+
+function optionsMouse(event, ele) {
+  clearOptionsSelection(getCanvas(ele));
+}
+
+function optionsPan(event, ele) {
+  var canvas = getCanvas(ele);
+  clearOptionsSelection(canvas);
+  canvas.isPanningMode = true;
+}
+
+function getCanvas(ele) {
+  return ele.parentNode.parentNode.children[1].firstElementChild.firstElementChild.fabric;
+}
+
+function clearOptionsSelection(canvas) {
+  canvas.isDrawingMode = false;
+  canvas.isPanningMode = false;
+}
+
 function initializeCanvas(id) {
   var template = document.getElementById("canvasTemplate");
   var element = document.importNode(template.content, true).firstElementChild
@@ -84,97 +180,4 @@ function initializeCanvas(id) {
   c.fabric.on("object:added", function(e) { userCreateElement(e.target); });
   c.fabric.on("object:removed", function(e) { userDeleteElement(e.target); });
   return c.fabric;
-}
-
-function initializeElement(object) {
-  //put any init stuff here
-}
-
-function userUpdateElement(object) {
-  var message = {};
-  message.object = object.toJSON(["id"]);
-  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
-}
-
-function userCreateElement(object) {
-  initializeElement(object);
-  var message = {};
-  object.id = new Date().getTime(); //todo make this a more robust id
-  message.object = JSON.stringify(object);
-  message.to = 'default'; //todo get actual id
-  this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
-}
-
-function userDeleteElement(object) {
-  var message = {};
-  message.objectID = object.id;
-  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
-}
-
-function alertPanelChange() {
-  for (var key in canvasArray) {
-    canvasArray[key].setHeight(this.panel.getHeight());
-    canvasArray[key].setWidth(this.panel.getWidth());
-    canvasArray[key].renderAll();
-  }
-}
-
-function addPending(content) {
-
-}
-
-function removePending(content) {
-
-}
-
-function createElement(content) {
-  return; //todo why 
-  fabric.util.enlivenObjects([content.object], (objects) => {
-    canvasArray[content.to].add(objects[0]);
-  });
-}
-
-function deleteElement(content) {
-
-}
-
-function updateElement(content) {
-
-}
-
-function optionsFreeDraw(event, ele) {
-  var canvas = getCanvas(ele);
-  clearOptionsSelection(canvas);
-  canvas.isDrawingMode = true;
-}
-
-function optionsCreateShape(event, ele) {
-
-}
-
-function optionsLineColor(event, ele) {
-
-}
-
-function optionsFillColor(event, ele) {
-
-}
-
-function optionsMouse(event, ele) {
-  clearOptionsSelection(getCanvas(ele));
-}
-
-function optionsPan(event, ele) {
-  var canvas = getCanvas(ele);
-  clearOptionsSelection(canvas);
-  canvas.isPanningMode = true;
-}
-
-function getCanvas(ele) {
-  return ele.parentNode.parentNode.children[1].firstElementChild.firstElementChild.fabric;
-}
-
-function clearOptionsSelection(canvas) {
-  canvas.isDrawingMode = false;
-  canvas.isPanningMode = false;
 }

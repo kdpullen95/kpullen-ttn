@@ -10,14 +10,15 @@
   <template id="panelTemplate">
     <div class="panel hidden">
       <div class="iconBar">
-        <img class="dragIcon icon" src="icons/dragIcon.jpg" onmousedown="startDrag(event, this)"/>
+        <img class="dragIcon icon" src="icons/dragIcon.jpg" onmousedown="startDrag(event, this)" />
       </div>
       <iframe class="iframePanel"></iframe>
-      <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(event, this)"/>
+      <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(event, this)" />
+      <img class="closeIcon icon" src="icons/closeIcon.jpg" onmousedown="closePanel(event, this)" />
     </div>
   </template>
 </head>
-<body>
+<body onload="synchronizationRequest()">
   <div id="overlay"> </div>
   <div id="menu">
     <button onclick="addNewPanel()">New Panel</button>

@@ -10,7 +10,6 @@ Before 10/28
       - put a high z-level invisible thing over the iframe portion while moving so that it doesn't stick when mouse is over that area
 
 Before 11/10
-+++++ Why is chatpanel id 0?
 ✓✓✓✓✓ Rework id/type system to pair them with appl
 +++++ Have server send info to use correct launchpanel regardless of name
 +++++ Finish regex & math for chatPanel

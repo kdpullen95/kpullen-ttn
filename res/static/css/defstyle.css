@@ -32,6 +32,12 @@
   right: 0px;
 }
 
+.closeIcon {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
 #panelContainer {
   background: silver;
   width:1200px;

@@ -45,6 +45,10 @@ module.exports = {
 
   assignID: function() { //TODO
     return Math.floor(Math.random() * 10000);
+  },
+
+  signalVisibility: function(message) {
+    return true;
   }
 }
 

@@ -1,9 +1,10 @@
 var verbose = true;
 var mongoDB;
-var reqFunctions = ["init", "processMessage", "getSizeValues", "assignID"]; //TODO move this to a file or something
-var sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
+const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility"]; //TODO move this to a file or something
+const sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
 var userCollection;
 var modFunctions = {}; //access to specific panels files
+var stateObj = {}; //keeps a running record of the current state of panels
 
 //****************************************************************************
 
@@ -25,12 +26,9 @@ module.exports = {
   },
 
   prefix:  {
-    socket:         '>>>>>>SOCKET.io>>>>>>>',
-    mongo:          '#######MONGOdb########',
-    express:        '******EXPRESSjs*******',
-    default:        '------DEFAULTmsg------',
-    function:       '%%%%%%kfunctions%%%%%%',
-    error:          '!!!!!!!!ERROR!!!!!!!!!',
+    socket:   '>>>>>>SOCKET.io>>>>>>>',     mongo:    '#######MONGOdb########',
+    express:  '******EXPRESSjs*******',     default:  '------DEFAULTmsg------',
+    function: '%%%%%%kfunctions%%%%%%',     error:    '!!!!!!!!ERROR!!!!!!!!!',
   },
 
   //****************************************************************************
@@ -40,14 +38,22 @@ module.exports = {
   //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
   ////emit types: sender, all, allExceptSender
   processMessage: function(message, socket, io) {
-    if (message.from && message.from.type) {
-      if (message.action && message.action === 'initPanel') {
-        return this.createPanel(message);
-      } else
-      if (modFunctions[message.from.type]) {
-        return modFunctions[message.from.type].processMessage(message);
+    if (message.from && message.from.type && message.action) {
+      switch (message.action) {
+        case 'synchronize':
+          return synchronizeState();
+        case 'createPanel':
+          return affirmAndPassOn(this.assignValues(message));;
+        case 'movePanel':
+        case 'resizePanel':
+        case 'closePanel':
+            return affirmAndPassOn(message);
+        default:
+          if (modFunctions[message.from.type])
+            return modFunctions[message.from.type].processMessage(message);
       }
     }
+    throw new Error("Message improperly formatted.")
   },
 
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -72,22 +78,15 @@ module.exports = {
     }
   },
 
-  authUser: function(user, password) {
+  authUser: function(user, pin) {
     return true; //TODO
   },
 
-  createPanel: function(message) {
-    var messageCollection = [];
-    var signal = message.content.signal && message.from.type !== 'launchPanel'; //todo allow panels to self-report their default creation visibility
+  assignValues: function(message) {
     message.content = { id: message.from.id.toString().startsWith('DEFAULTID') ? this.assignID(message.from.type) : message.from.id,
                         type: message.from.type };
     message.content.loc = this.getSizeValues(message.from.type, message.content.id);
-    messageCollection[0] = {message: message, emitType: 'sender'};
-    if (signal) {
-      messageCollection[1] = {message: this.shallowClone(message), emitType: 'allExceptSender'};
-      messageCollection[1].message.action = "createPanel";
-    }
-    return messageCollection;
+    return message;
   },
 
   assignID: function(type) {
@@ -202,4 +201,65 @@ function closeDB() {
     _this.log(_this.prefix.mongo, ["(EXIT) closing open database: ", databaseName]);
     mongoDB.close();
   }
+}
+
+//iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+//iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+//iiiiiiiiiiiiiiiiiiiiiiii Message Handling iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+
+function affirmAndPassOn(message) {
+  var messageCollection = [];
+  if (modFunctions[message.from.type].signalVisibility(message)) {
+    messageCollection[1] = {message: _this.shallowClone(message), emitType: 'allExceptSender'};
+    updateState(messageCollection[1].message);
+  }
+  message.affirm = true;
+  messageCollection[0] = {message: message, emitType: 'sender'};
+  return messageCollection;
+}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@CURRENT STATE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+//stateID = type + id
+
+function updateState(message) {
+  switch(message.action) {
+    case 'createPanel':
+      addStateEntry(message);
+      break;
+    case 'movePanel':
+    case 'resizePanel':
+      updateStateValues(message);
+      break;
+    case 'closePanel':
+      removeStateEntries(message);
+  }
+}
+
+function addStateEntry(message) {
+  _this.log(_this.prefix.function, ["adding ", message, " to state array."])
+  stateObj[message.content.type + message.content.id] = message; //todo remove defaultid stuff
+}
+
+function updateStateValues(message) {
+  message.appl.forEach((appl) => {
+    _this.log(_this.prefix.function, ["updating state values for ", appl]);
+    //if more attributes appear, this will have to be revisited, perhaps with deepMerge
+    var id = appl.type + appl.id;
+    stateObj[id].content.loc = { ...stateObj[id].content.loc, ...message.content.loc };
+  });
+}
+
+function removeStateEntries(message) {
+  message.appl.forEach((appl) => {
+    _this.log(_this.prefix.function, ["removing ", appl, " from state array."]);
+    delete stateObj[appl.type + appl.id];
+  });
+}
+
+function synchronizeState() {
+  return [{ message: { action: 'bulk', content: Object.values(stateObj) },
+            emitType: 'sender' }];
 }

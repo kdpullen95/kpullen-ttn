@@ -66,29 +66,31 @@ class Panel {
   }
 
   deleteSignal() {
-    this.buildMessageAndSend('removePanel');
+    this.buildMessageAndSend('closePanel');
     this.delete();
   }
 
   delete() {
-    //TODO remove from panel list in manager
+    removePanel(this);
     this.element.remove();
   }
 
-  createNew(type="launchPanel", signal) {
-    addPanel(new Panel(type), signal);
+  createNew(type="launchPanel") {
+    addPanel(new Panel(type));
   }
 
-  initElement(parent, signal=false) {
+  initElement(parent, content) {
     var template = document.getElementById("panelTemplate");
     this.element = document.importNode(template.content, true).firstElementChild;
     this.element.children[1].setAttribute('src', "/main/panels/" + this.iden.type);
     this.element.panel = this;
     //so that element-return DOM requests can access panel-specific//
-    this.element.children[1].onload = () => {
-      log(["iframe loaded for panel: ", this]);
-      this.buildMessageAndSend('initPanel', [this.iden], {signal: signal});
-    };
+    this.element.children[1].onload = typeof content === 'undefined' ?
+        () => {
+      this.buildMessageAndSend('createPanel', [this.iden]);
+    } : () => {
+      this.firstTimeUpdate(content);
+    }
     parent.appendChild(this.element);
   }
 
@@ -126,7 +128,7 @@ class Panel {
   }
 
   firstTimeUpdate(content) {
-    log(["running first time seupt for panel: ", this]);
+    log(["running first time setup for panel: ", this, "using content: ", content]);
     this.updID(content.id);
     this.updPos(content.loc.top, content.loc.left);
     this.updSize(content.loc.width, content.loc.height);
@@ -136,7 +138,7 @@ class Panel {
   passMessageOn(msg) {
     if (msg && typeof(msg.action) !== 'undefined' && this.includesThis(msg.appl)) {
       switch(msg.action) {
-        case 'initPanel':
+        case 'createPanel':
           this.firstTimeUpdate(msg.content);
           break;
         case 'removePanel':
@@ -166,14 +168,12 @@ class Panel {
   }
 
   updPos(top, left) {
-    log(["updating position of panel to " + top + " " + left + " for: ", this.iden]);
     this.element.style.top = top + "px";
     this.element.style.left = left + "px";
     this.alertChildtoChange();
   }
 
   updSize(width, height) {
-    log(["updating size of panel to " + width + " " + height + " for: ", this.iden]);
     this.element.style.width = width + "px";
     this.element.style.height = height + "px";
     this.alertChildtoChange();
@@ -184,11 +184,17 @@ class Panel {
   }
 
   updID(id) {
+    var oldID = this.getStrID();
     this.iden.id = id;
+    updatePanelID(oldID, this);
   }
 
   getIdentification() {
     return this.iden;
+  }
+
+  getStrID() {
+    return this.iden.type + this.iden.id;
   }
 
   getID() {

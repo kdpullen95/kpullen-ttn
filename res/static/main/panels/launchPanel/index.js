@@ -27,6 +27,6 @@ function populatePanels(panelArray) {
 }
 
 function submitSelection() {
-  this.panel.createNew(document.getElementById('panelSelect').value, true);
+  this.panel.createNew(document.getElementById('panelSelect').value);
   this.panel.delete();
 }

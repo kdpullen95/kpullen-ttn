@@ -29,5 +29,13 @@ module.exports = {
   assignID: function() {
     //put database call to ensure unique ids if you need to here
     return id; //literally whatever, as long as it's not so long it starts causing issues
+  },
+
+  signalVisibility: function(message) {
+    return true;
+  },
+
+  launchSelections: function(message) {
+    return "DEFAULT"; //TODO!!
   }
 }

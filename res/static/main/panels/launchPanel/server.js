@@ -29,5 +29,9 @@ module.exports = {
     return idcycle++; //todo maybe less lazy
     //but since nothing gets saved to the database with this panel
     //which means all of them get destroyed on server restart anyway...
+  },
+
+  signalVisibility: function(message) {
+    return false;
   }
 }
