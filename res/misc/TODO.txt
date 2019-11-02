@@ -19,7 +19,10 @@ Before 11/10
 +++++ Templates for custom panels, instructions
 +++ Security (JWT for sockets, proper for login)
 +++ Canvas improvements (most flashy panel by far)
-+++++ Database saving & loading for chatpanel & panel positions/loaded panels
+✓✓✓✓✓ Database saving & loading for chatpanel & panel positions/loaded panels
 +++ Selective sync/discrete panel movement/resize
     + depending on individual panel settings & user settings
     +++ depending on panel type
+
+
+fix new introduced bug: can't have duplicates of same id panel on page

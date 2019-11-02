@@ -1,6 +1,7 @@
 var panelObj = {};
 var socket = io();
 var defaultIDNum = 1;
+var templateList;
 
 socket.on('res', function (msg) {
   log(['received message: ', msg]);
@@ -8,10 +9,15 @@ socket.on('res', function (msg) {
 });
 
 function processMessage(msg) {
+  if (!msg) return;
   if (msg.action === 'createPanel' && !msg.affirm) {
     addPanel(new Panel(msg.content.type, msg.content.id), msg.content);
   } else if (msg.action === 'closePanel' && !msg.affirm) {
     removePanels(msg.appl);
+  } else if (msg.action === 'clearTemplate') {
+    clear();
+  } else if (msg.action === 'updateTemplateList') {
+    updateTemplateList(msg);
   } else if (msg.action === 'bulk') {
     msg.content.forEach( (message) => {
       processMessage(message);
@@ -28,7 +34,9 @@ function synchronizationRequest() {
 }
 
 function clear() {
-
+  Object.values(panelObj).forEach(function(panel) {
+    panel.delete(); //todo more elegant solution + allow panels to be marked not clearing
+  });
 }
 
 function startup() {
@@ -62,6 +70,39 @@ function removePanels(applArray) {
   applArray.forEach( (appl) => {
     panelObj[appl.type + appl.id].delete();
   });
+}
+
+function saveTemplate() {
+  var name = prompt("Enter a Name for Template: ", "");
+  if (name !== null) {
+    if (name === "") {
+      name = new Date().getTime();
+    }
+    sendMessageToServer({action: 'saveCurrentTemplate', content: {name: name}});
+  }
+}
+
+function updateTemplateList(message) {
+  templateList = message.content.infoArray;
+  var select = document.getElementById('templateSelect');
+  var options = Array.from(select.options);
+  options.forEach( (option) => {
+    if (option.value !== "")
+      select.remove(option);
+  });
+  templateList.forEach( (template) => {
+    var opt = document.createElement("option");
+    opt.value = template._id;
+    opt.text = template.name;
+    select.add(opt);
+  });
+}
+
+function loadTemplate() {
+  selectEle = document.getElementById("templateSelect");
+  if (selectEle.value !== "") {
+    sendMessageToServer({action: "loadTemplate", content: {id: selectEle.value}});
+  }
 }
 
 function removePanel(panel) {

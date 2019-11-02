@@ -117,6 +117,8 @@ function saveData(message) {
 
 async function loadData(message) {
   var doc = await collection.findOne({'_id': message.from.id});
-  message.content = doc.messages;
+  if (doc !== null) {
+    message.content = doc.messages;
+  }
   return [{ message: message, emitType: 'sender'}]; //TODO
 }

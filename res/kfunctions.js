@@ -1,10 +1,11 @@
 var verbose = true;
 var mongoDB;
 const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility", "getSavedPanels"]; //TODO move this to a file or something
-const sharedCollectionsTxt = ["userSettings", "resources", "charSheets"]; //TODO ditto
+const sharedCollectionsTxt = ["userSettings", "resources", "charSheets", "stateTemplates"]; //TODO ditto
 var userCollection;
 var modFunctions = {}; //access to specific panels files
 var stateObj = {}; //keeps a running record of the current state of panels
+const ObjectID = require('mongodb').ObjectID;
 
 //****************************************************************************
 
@@ -38,24 +39,25 @@ module.exports = {
   //messageCollection = [{message: messageObject, emitType: string}, {mess...ring}]
   ////emit types: sender, all, allExceptSender
   processMessage: async function(message, socket, io) {
-    if (message.from && message.from.type && message.action) {
-      switch (message.action) {
-        case 'synchronize':
-          return synchronizeState();
-        case 'loadPanel':
-          return setLoadToCreate(message);
-        case 'createPanel':
-          return affirmAndPassOn(this.assignValues(message));
-        case 'movePanel':
-        case 'resizePanel':
-        case 'closePanel':
-            return affirmAndPassOn(message);
-        default:
-          if (modFunctions[message.from.type])
-            return await modFunctions[message.from.type].processMessage(message);
-      }
+    switch (message.action) {
+      case 'synchronize':
+        return await synchronizeState();
+      case 'saveCurrentTemplate':
+        return await saveCurrentTemplate(message);
+      case 'loadTemplate':
+        return await loadTemplate(message);
+      case 'loadPanel':
+        return setLoadToCreate(message);
+      case 'createPanel':
+        return affirmAndPassOn(this.assignValues(message));
+      case 'movePanel':
+      case 'resizePanel':
+      case 'closePanel':
+          return affirmAndPassOn(message);
+      default: //todo operate on appl, not from?
+        if (modFunctions[message.from.type])
+          return await modFunctions[message.from.type].processMessage(message);
     }
-    throw new Error("Message improperly formatted.")
   },
 
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -284,7 +286,36 @@ function removeStateEntries(message) {
   });
 }
 
-function synchronizeState() {
-  return [{ message: { action: 'bulk', content: Object.values(stateObj) },
-            emitType: 'sender' }];
+async function synchronizeState(emit = 'sender', clear = true) {
+  var content = [];
+  if (clear)
+    content.push({action: 'clearTemplate'});
+  content.push(await getDatabaseTemplates());
+  return [{ message: { action: 'bulk', content: content.concat(Object.values(stateObj)), },
+            emitType: emit }];
+}
+
+async function saveCurrentTemplate(message) {
+  await _this.sharedCollections.stateTemplates.insertOne({obj: stateObj,
+                                                          name: message.content.name,
+                                                          created: new Date().getTime(),
+                                                          _id: new ObjectID().toHexString()});
+  var temp = await getDatabaseTemplates(); //todo why can't inline?
+  return [{message: temp, emitType: 'all'}];
+}
+
+async function loadTemplate(message) {
+  stateObj = (await _this.sharedCollections.stateTemplates.findOne({'_id': message.content.id})).obj;
+  return synchronizeState('all');
+}
+
+async function getDatabaseTemplates(message = {content: {}}) {
+  message.action = 'updateTemplateList';
+  message.content.infoArray = [];
+  var array = await _this.sharedCollections.stateTemplates.find({}).toArray();
+  array.forEach((doc) => {
+    delete doc.obj; //todo only get id/name/created in initial query, not here
+    message.content.infoArray.push(doc);
+  });
+  return message;
 }
