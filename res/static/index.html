@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="css/defstyle.css" type="text/css"/>
+  <script src="index.js"></script>
 </head>
 <body>
   login:
-  <form method="post">
     <div>
-      <label for="username">username</label>
-      <input name="username" id="username">
+      <label for="user">user</label>
+      <input name="user" id="user">
     </div>
     <div>
-      <label for="password">password</label>
-      <input name="password" id="password">
+      <label for="pin">pin</label>
+      <input name="pin" id="pin">
     </div>
     <div>
-      <button>Submit</button>
+      <button onclick="send()">Submit</button>
     </div>
-  </form>
 </body>
 </html>

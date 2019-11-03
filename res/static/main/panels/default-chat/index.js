@@ -6,22 +6,22 @@ function init(panel) {
   this.panel.buildMessageAndSend('init');
 }
 
-function passMessageOn(msg) {
-  switch(msg.action) {
+function passMessageOn(message) {
+  switch(message.action) {
     case 'affirm':
-      removePending(msg.content);
+      removePending(message.content);
     case 'chatmsg':
-      addChatMessage(msg.content);
+      addChatMessage(message.content);
       break;
     case 'init':
-      addChatMessages(msg.content);
+      addChatMessages(message.content);
       break;
     default:
   }
 }
 
-function removePending(chatmsg) {
-  var message = document.getElementById(chatmsg.time);
+function removePending(message) {
+  var message = document.getElementById(message.time);
   message.parentNode.removeChild(message);
 }
 
@@ -33,9 +33,10 @@ function addChatMessages(array) {
 
 function addChatMessage(chatmsg, pending=false) {
   //TODO options for displaying things
-  var str = '[';
-  str += chatmsg.time;
-  str += ' ' + chatmsg.user + ']: ';
+  var str = '';
+  var date = new Date(chatmsg.time);
+  str += '[' + date.toLocaleTimeString().replace(" AM","").replace(" PM","") + '] ';
+  str += chatmsg.user + ': ';
   str += chatmsg.message;
   var div = document.createElement("DIV");
   document.getElementById("chatBox").appendChild(div);
@@ -44,6 +45,8 @@ function addChatMessage(chatmsg, pending=false) {
     div.id = chatmsg.time;
   }
   var node = document.createTextNode(str);
+  var hoverInfo = date.toLocaleString();
+  div.setAttribute("title", hoverInfo);
   div.appendChild(node);
   div.appendChild(document.createElement("HR"));
 }

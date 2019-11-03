@@ -72,7 +72,7 @@ function runServer() {
     });
   });
 
-  app.use(express.urlencoded({extended: true}));
+  app.use(express.json());
 
   /* Logs every non-socket connection, regardless of type, then forwards to next functSion */
   app.use(function (req, res, next) {
@@ -82,18 +82,15 @@ function runServer() {
 
   app.use(express.static(statloc));
 
-  app.post('/',function(req, res) {
+  app.post('',function(req, res) {
     //TODO what am I doing
     //TODO client side + server side hashing with option of SSL instead if provided cert
     //TODO security is hard
-    var user = req.body.username;
-    var password = req.body.password;
-    var loginSuccess = {username: user, key: 'something'};
-    if (func.authUser(user, password)) {
-      addJWTUserKey(user);
-      res.json(loginSuccess);
+    if (func.authUser(req.body.user, req.body.pin)) {
+      addJWTUserKey(req.body.user);
+      res.json({user: req.body.user, k: 'TODO'});
     }
-    res.end('nope');
+    res.end('login incorrect');
   });
 
   server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true));

@@ -2,11 +2,29 @@ var panelObj = {};
 var socket = io();
 var defaultIDNum = 1;
 var templateList;
+var user;
 
 socket.on('res', function (msg) {
   log(['received message: ', msg]);
   processMessage(msg);
 });
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// code from https://html-online.com/articles/get-url-parameters-javascript/
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+function getURLVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+function grabUserDataAndSync() {
+  user = {user: getURLVars()['user'], k: getURLVars()['k']};
+  synchronizationRequest();
+}
 
 function processMessage(msg) {
   if (!msg) return;
@@ -48,6 +66,7 @@ function startup() {
 }
 
 function sendMessageToServer(mes) {
+  mes.user = user;
   log(['sending message: ', mes]);
   socket.emit('serv', mes);
 }

@@ -70,6 +70,7 @@ function parseChatMessage(message) {
     newstr += find.first + '[' + recParentheses(find.match) + ']';
     str = find.last;
   }
+  message.content.user = message.user.user;
   message.content.message = newstr + str;
   saveData(message);
   var affirm = func.shallowClone(message);
@@ -82,14 +83,43 @@ function recParentheses(str) {
   while ((find = findRegEx(regex.parentheses,str)) !== null) {
     str = find.first + recParentheses(find.match) + find.last;
   }
-  return buildMath(str);
+  return 0 + str;
+  return asSearch(mdSearch(eSearch(rSearch(str))));
 }
 
 //format 45[something] denotes num answer first, steps that got there second
 //PREMDAS
-function buildMath(str) {
-  var num = 0;
-  return num + '[' + str + ']';
+//roll - exponent - (multiply - divide) - (add - subtract)
+function rSearch(str) {
+  var find;
+  while((find = findRegEx(regex.roll, str)) !== null) {
+
+  }
+  return str;
+}
+
+function eSearch(str) {
+  var find;
+  while((find = findRegEx(regex.exponent, str)) !== null) {
+
+  }
+  return str;
+}
+
+function mdSearch(str) {
+  var find;
+  while((find = findRegEx(regex.multiplyDivide, str)) !== null) {
+
+  }
+  return str;
+}
+
+function asSearch(str) {
+  var find;
+  while((find = findRegEx(regex.addSubtract, str)) !== null) {
+
+  }
+  return str;
 }
 
 // splits the str nicely when given regex
