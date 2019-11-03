@@ -1,27 +1,37 @@
 var panel;
+var brush = {};
+var objectMenu;
 
 function init(panel) {
   this.panel = panel;
   this.panel.assignChild(this);
   this.panel.buildMessageAndSend('init');
+  objectMenu = {
+    element: document.getElementById("objectMenu"),
+    delete: function () {
+      console.log("You called delete! on: ");
+      console.log(objectMenu.selection);
+    },
+  };
+  clearSelectionMenu();
 }
 
-function passMessageOn(msg) {
-  switch(msg.action) {
+function passMessageOn(message) {
+  switch(message.action) {
     case 'affirm':
-      removePending(msg.content);
+      removePending(message.content.object, message.content.to);
     case 'create':
-      createElement(msg.content);
+      createElements(message.content.object, message.content.to);
       break;
     case 'delete':
-      deleteElement(msg.content);
+      deleteElement(message.content.object, message.content.to);
       break;
     case 'update':
-      updateElement(msg.content);
+      updateElement(message.content.object, message.content.to);
       break;
     case 'init':
       //todo initializeCanvases(msg.content);
-      initializeCanvases({canvasNames: ['default']});
+      initializeCanvases({canvasSettings: [{name:'default'}]});
       break;
     default:
   }
@@ -29,10 +39,21 @@ function passMessageOn(msg) {
 
 function initializeCanvases(content) {
   this.canvasArray = {};
-  content.canvasNames.forEach((name) => {
-    canvasArray[name] = initializeCanvas(name);
+  content.canvasSettings.forEach((setting) => {
+    canvasArray[setting.name] = initializeCanvas(setting.name);
+    canvasArray[setting.name].brushes = initializeBrushes(canvasArray[setting.name]);
+    canvasArray[setting.name].userLineColor = '#000000';
+    canvasArray[setting.name].userFillColor = '#ffffff';
+    canvasArray[setting.name].userLineWidth = 3;
+    canvasArray[setting.name].userBrush = canvasArray[setting.name].brushes.pencil;
   });
   alertPanelChange();
+}
+
+function initializeBrushes(canvas) {
+  return {
+    pencil: new fabric.PencilBrush(canvas)
+  };
 }
 
 function initializeElement(object) {
@@ -49,8 +70,8 @@ function userCreateElement(object) {
   if (object.proppedFlag) return;
   initializeElement(object);
   var message = {};
-  object.id = new Date().getTime(); //todo make this a more robust id
-  message.object = object.toJSON(["id"]);
+  object.id = new Date().getTime(); //todo make this a more robust id (assign on server?)
+  message.object = JSON.stringify([object]); //why am I dropping info if I don't do this?
   message.to = 'default'; //todo get actual id
   this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
 }
@@ -77,12 +98,13 @@ function removePending(content) {
 
 }
 
-function createElement(content) {
-  return;
-  fabric.util.enlivenObjects([content.object], function(objects) {
-    objects[0].proppedFlag = true;
-    canvasArray[content.to].add(objects[0]);
-    canvasArray[content.to].renderAll();
+function createElements(objectsJSON, to) {
+  fabric.util.enlivenObjects(JSON.parse(objectsJSON), (liveObjects) => {
+    liveObjects.forEach( (object) => {
+      object.proppedFlag = true;
+      canvasArray[to].add(object);
+      canvasArray[to].renderAll();
+    });
   });
 }
 
@@ -97,7 +119,14 @@ function updateElement(content) {
 function optionsFreeDraw(event, ele) {
   var canvas = getCanvas(ele);
   clearOptionsSelection(canvas);
+  updFreeDraw(canvas);
   canvas.isDrawingMode = true;
+}
+
+function updFreeDraw(canvas) {
+  canvas.freeDrawingBrush = canvas.userBrush;
+  canvas.freeDrawingBrush.color = canvas.userLineColor;
+  canvas.freeDrawingBrush.width = canvas.userLineWidth;
 }
 
 function optionsCreateShape(event, ele) {
@@ -105,11 +134,13 @@ function optionsCreateShape(event, ele) {
 }
 
 function optionsLineColor(event, ele) {
-
+  var canvas = getCanvas(ele.parentNode);
+  canvas.userLineColor = ele.value;
+  updFreeDraw(canvas);
 }
 
 function optionsFillColor(event, ele) {
-
+  getCanvas(ele.parentNode).userFillColor = ele.value;
 }
 
 function optionsMouse(event, ele) {
@@ -131,9 +162,19 @@ function clearOptionsSelection(canvas) {
   canvas.isPanningMode = false;
 }
 
+function clearSelectionMenu() {
+  objectMenu.selection = null;
+  objectMenu.element.style.visibility = 'hidden';
+}
+
+function openSelectionMenu(objects) {
+  objectMenu.selection = objects; //todo why isn't it showing/hiding?
+  objectMenu.element.style.visibility = 'visible';
+}
+
 function initializeCanvas(id) {
   var template = document.getElementById("canvasTemplate");
-  var element = document.importNode(template.content, true).firstElementChild
+  var element = document.importNode(template.content, true).firstElementChild;
   var c = element.children[1].firstElementChild;
   c.id = id;
   document.getElementById('canvasesContainer').appendChild(element);
@@ -179,5 +220,9 @@ function initializeCanvas(id) {
   c.fabric.on("object:modified", function(e) { userUpdateElement(e.target); });
   c.fabric.on("object:added", function(e) { userCreateElement(e.target); });
   c.fabric.on("object:removed", function(e) { userDeleteElement(e.target); });
+  c.fabric.on("selection:updated", function(e) { openSelectionMenu(e.target) });
+  c.fabric.on("selection:created", function(e) { openSelectionMenu(e.target) });
+  c.fabric.on("selection:cleared", clearSelectionMenu);
+  c.fabric.on("before:transform", clearSelectionMenu);
   return c.fabric;
 }

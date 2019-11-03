@@ -7,8 +7,9 @@ const server = require('http').Server(app);
 //const passport = require('passport');
 //  socket.io for SPA page
 const io = require('socket.io')(server);
-//  mongo: storing files, users
+//  mongo: storing files, users, generating ids
 const mongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
 //  misc for loading and accessing files
 const util = require('util');
 const fs = require('fs');
@@ -83,12 +84,11 @@ function runServer() {
   app.use(express.static(statloc));
 
   app.post('',function(req, res) {
-    //TODO what am I doing
     //TODO client side + server side hashing with option of SSL instead if provided cert
     //TODO security is hard
     if (func.authUser(req.body.user, req.body.pin)) {
-      addJWTUserKey(req.body.user);
-      res.json({user: req.body.user, k: 'TODO'});
+      addUserKey(req.body.user);
+      res.json({user: req.body.user, k: activeUsers[req.body.user].k});
     }
     res.end('login incorrect');
   });
@@ -120,6 +120,6 @@ function sendResponses(messageCollection, socket, io) {
   });
 }
 
-function addJWTUserKey(user) { //ignore
-  activeUsers[user] = Math.random() * 10000 + '***' + user + '***' + Math.random() * 10000;
+function addUserKey(user) { //wholly unfinished
+  activeUsers[user] = {k: new ObjectID().toHexString()};
 }

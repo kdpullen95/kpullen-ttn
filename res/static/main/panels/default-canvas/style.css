@@ -16,3 +16,24 @@ canvas {
   top: 15;
   left: 15;
 }
+
+.colorContainer {
+  position: relative;
+  height: 20px;
+}
+
+.colorPicker {
+  position: absolute;
+  top: 0;
+  left: 22px;
+  width: 18px;
+  height: 18px;
+}
+
+#objectMenu {
+  position: absolute;
+  height: 200px;
+  width: 50px;
+  z-index: 8;
+  background-color: aqua;
+}

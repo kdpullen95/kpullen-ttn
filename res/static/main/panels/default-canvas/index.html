@@ -11,10 +11,20 @@
       <div class="canvasBar">
         <img class="optionsFreeDraw icon" src="icons/optionsFreeDraw.png" onmousedown="optionsFreeDraw(event, this)" />
         <img class="optionsCreateShape icon" src="icons/optionsCreateShape.png" onmousedown="optionsCreateShape(event, this)"/>
-        <img class="optionsLineColor icon" src="icons/optionsLineColor.png" onmousedown="optionsLineColor(event, this)" />
-        <img class="optionsFillColor icon" src="icons/optionsFillColor.png" onmousedown="optionsFillColor(event, this)" />
+        <div class="colorContainer">
+          <input type="color" class="colorPicker optionsLineColor" value='#000000' oninput="optionsLineColor(event, this)">
+          <img class="optionsLineColor icon overlayColor" src="icons/optionsLineColor.png" />
+        </div>
+        <div class="colorContainer">
+          <input type="color" class="colorPicker optionsFillColor" value='#ffffff' oninput="optionsFillColor(event, this)">
+          <img class="optionsFillColor icon overlayColor" src="icons/optionsFillColor.png" />
+        </div>
+        <div class="widthContainer">
+          <img class="optionsLineWidth icon" src="icons/optionsLineWidth.png" />
+        </div>
         <img class="optionsMouse icon" src="icons/optionsMouse.png" onmousedown="optionsMouse(event, this)" />
         <img class="optionsPan icon" src="icons/optionsPan.png" onmousedown="optionsPan(event, this)"  />
+        <img class="optionsErase icon" src="icons/optionsErase.png" onmousedown="optionsErase(event, this)" />
       </div>
       <div class="canvasContainer"><canvas></canvas></div>
     </div>
@@ -22,6 +32,9 @@
 </head>
 <body class="interiorPanel">
   <div id="canvasesContainer">
+    <div id="objectMenu">
+
+    </div>
   </div>
 </body>
 </html>

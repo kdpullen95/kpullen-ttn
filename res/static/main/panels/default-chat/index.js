@@ -45,7 +45,8 @@ function addChatMessage(chatmsg, pending=false) {
     div.id = chatmsg.time;
   }
   var node = document.createTextNode(str);
-  var hoverInfo = date.toLocaleString();
+  var hoverInfo = date.toLocaleString() + "\nUser: " + chatmsg.user; 
+  //todo make this a proper popout, not a hover title
   div.setAttribute("title", hoverInfo);
   div.appendChild(node);
   div.appendChild(document.createElement("HR"));
