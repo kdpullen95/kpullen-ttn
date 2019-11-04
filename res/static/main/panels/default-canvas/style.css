@@ -10,11 +10,12 @@ canvas {
 }
 
 .canvasBar {
-  width: 20px;
+  width: 50px;
   z-index: 2;
   position: absolute;
   top: 15;
   left: 15;
+  background-color: rgba(112,128,144,0.25);
 }
 
 .colorContainer {
@@ -30,10 +31,9 @@ canvas {
   height: 18px;
 }
 
-#objectMenu {
-  position: absolute;
-  height: 200px;
+.objectMenu {
+  height: 0px;
   width: 50px;
-  z-index: 8;
-  background-color: aqua;
+  z-index: 2;
+  overflow: hidden;
 }

@@ -6,15 +6,11 @@ function init(panel) {
   this.panel = panel;
   this.panel.assignChild(this);
   this.panel.buildMessageAndSend('init');
-  objectMenu = {
-    element: document.getElementById("objectMenu"),
-    delete: function () {
-      console.log("You called delete! on: ");
-      console.log(objectMenu.selection);
-    },
-  };
-  clearSelectionMenu();
 }
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&MESSAGE HANDLING&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 function passMessageOn(message) {
   switch(message.action) {
@@ -31,71 +27,10 @@ function passMessageOn(message) {
       break;
     case 'init':
       //todo initializeCanvases(msg.content);
-      initializeCanvases({canvasSettings: [{name:'default'}]});
+      initializeCanvases({canvasSettings: [{id:'default'}]});
       break;
     default:
   }
-}
-
-function initializeCanvases(content) {
-  this.canvasArray = {};
-  content.canvasSettings.forEach((setting) => {
-    canvasArray[setting.name] = initializeCanvas(setting.name);
-    canvasArray[setting.name].brushes = initializeBrushes(canvasArray[setting.name]);
-    canvasArray[setting.name].userLineColor = '#000000';
-    canvasArray[setting.name].userFillColor = '#ffffff';
-    canvasArray[setting.name].userLineWidth = 3;
-    canvasArray[setting.name].userBrush = canvasArray[setting.name].brushes.pencil;
-  });
-  alertPanelChange();
-}
-
-function initializeBrushes(canvas) {
-  return {
-    pencil: new fabric.PencilBrush(canvas)
-  };
-}
-
-function initializeElement(object) {
-  //put any init stuff here
-}
-
-function userUpdateElement(object) {
-  var message = {};
-  message.object = object.toJSON(["id"]);
-  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
-}
-
-function userCreateElement(object) {
-  if (object.proppedFlag) return;
-  initializeElement(object);
-  var message = {};
-  object.id = new Date().getTime(); //todo make this a more robust id (assign on server?)
-  message.object = JSON.stringify([object]); //why am I dropping info if I don't do this?
-  message.to = 'default'; //todo get actual id
-  this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
-}
-
-function userDeleteElement(object) {
-  var message = {};
-  message.objectID = object.id;
-  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
-}
-
-function alertPanelChange() {
-  for (var key in canvasArray) {
-    canvasArray[key].setHeight(this.panel.getHeight());
-    canvasArray[key].setWidth(this.panel.getWidth());
-    canvasArray[key].renderAll();
-  }
-}
-
-function addPending(content) {
-
-}
-
-function removePending(content) {
-
 }
 
 function createElements(objectsJSON, to) {
@@ -114,6 +49,55 @@ function deleteElement(content) {
 
 function updateElement(content) {
 
+}
+
+function addPending(content) {
+
+}
+
+function removePending(content) {
+
+}
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^USER CONTROLS^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+function getCanvasID(object) {
+  return 'default'; //todo
+}
+
+function userUpdateElement(object) {
+  var message = {};
+  message.object = JSON.stringify([object]);
+  message.to = getCanvasID(object);
+  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
+}
+
+function userDeleteElement(object) {
+  var message = {};
+  message.object.id = object.id;
+  message.to = getCanvasID(object);
+  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
+}
+
+function userCreateElement(object) {
+  if (object.proppedFlag) return;
+  initializeElement(object);
+  var message = {};
+  object.id = new Date().getTime(); //todo make this a more robust id (assign on server?)
+  message.object = JSON.stringify([object]); //why am I dropping info if I don't do this?
+  message.to = getCanvasID(object);
+  this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
+}
+
+function alertPanelChange() {
+  for (var key in canvasArray) {
+    canvasArray[key].setHeight(this.panel.getHeight());
+    canvasArray[key].setWidth(this.panel.getWidth());
+    canvasArray[key].renderAll();
+  }
 }
 
 function optionsFreeDraw(event, ele) {
@@ -162,23 +146,54 @@ function clearOptionsSelection(canvas) {
   canvas.isPanningMode = false;
 }
 
-function clearSelectionMenu() {
-  objectMenu.selection = null;
-  objectMenu.element.style.visibility = 'hidden';
+function optionsDeleteSelected(event, ele) {
+  var canvas = getCanvas(ele.parentNode);
+  console.log(canvas.getActiveObjects());
+  canvas.getActiveObjects().forEach( (obj) => {
+    canvas.remove(obj);
+  });
+}
+
+function clearSelectionMenu(ev) {
+  ev = ev.deselected ? ev.deselected[0] : ev.target;
+  ev.canvas.objectMenu.style.height = "0px";
 }
 
 function openSelectionMenu(objects) {
-  objectMenu.selection = objects; //todo why isn't it showing/hiding?
-  objectMenu.element.style.visibility = 'visible';
+  objects[0].canvas.objectMenu.style.height = "100px";
 }
 
-function initializeCanvas(id) {
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+//******************************************************************************
+//******************************************************************************
+//****************************INITIALIZATION************************************
+
+function initializeElement(object) {
+  //put any init stuff here
+}
+
+function initializeCanvases(content) {
+  this.canvasArray = {};
+  content.canvasSettings.forEach((settings) => {
+    canvasArray[settings.id] = initializeCanvas(settings);
+  });
+  alertPanelChange();
+}
+
+function initializeBrushes(canvas) {
+  return {
+    pencil: new fabric.PencilBrush(canvas)
+  };
+}
+
+function initializeCanvas(settings) {
   var template = document.getElementById("canvasTemplate");
   var element = document.importNode(template.content, true).firstElementChild;
   var c = element.children[1].firstElementChild;
-  c.id = id;
+  c.id = settings.id;
   document.getElementById('canvasesContainer').appendChild(element);
-  c.fabric = new fabric.Canvas(id);
+  c.fabric = new fabric.Canvas(settings.id);
 
   //!!!!!!!!!BEGIN OUTSIDE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //////Section taken from http://fabricjs.com/fabric-intro-part-5//////////////
@@ -220,9 +235,16 @@ function initializeCanvas(id) {
   c.fabric.on("object:modified", function(e) { userUpdateElement(e.target); });
   c.fabric.on("object:added", function(e) { userCreateElement(e.target); });
   c.fabric.on("object:removed", function(e) { userDeleteElement(e.target); });
-  c.fabric.on("selection:updated", function(e) { openSelectionMenu(e.target) });
-  c.fabric.on("selection:created", function(e) { openSelectionMenu(e.target) });
-  c.fabric.on("selection:cleared", clearSelectionMenu);
-  c.fabric.on("before:transform", clearSelectionMenu);
+  c.fabric.on("selection:updated", function(e) { openSelectionMenu(e.selected) });
+  c.fabric.on("selection:created", function(e) { openSelectionMenu(e.selected) });
+  c.fabric.on("selection:cleared", function(e) { clearSelectionMenu(e) });
+
+  c.fabric.brushes = initializeBrushes(c.fabric);
+  c.fabric.userLineColor = '#000000'; //todo grab this from html
+  c.fabric.userFillColor = '#ffffff'; //ditto
+  c.fabric.userLineWidth = 3;         //
+  c.fabric.userBrush = c.fabric.brushes.pencil;
+  c.fabric.objectMenu = element.querySelector(".objectMenu");
+
   return c.fabric;
 }

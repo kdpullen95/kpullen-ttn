@@ -9,8 +9,7 @@
   <link rel="stylesheet" href="../css/defstyle.css" type="text/css"/>
   <template id="panelTemplate">
     <div class="panel hidden">
-      <div class="iconBar">
-        <img class="dragIcon icon" src="icons/dragIcon.jpg" onmousedown="startDrag(event, this)" />
+      <div class="iconBar" onmousedown="startDrag(event, this)">
       </div>
       <iframe class="iframePanel"></iframe>
       <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(event, this)" />

@@ -25,6 +25,9 @@
         <img class="optionsMouse icon" src="icons/optionsMouse.png" onmousedown="optionsMouse(event, this)" />
         <img class="optionsPan icon" src="icons/optionsPan.png" onmousedown="optionsPan(event, this)"  />
         <img class="optionsErase icon" src="icons/optionsErase.png" onmousedown="optionsErase(event, this)" />
+        <div class="objectMenu">
+          <img class="optionsDelete icon" src="icons/optionsDelete.png" onmousedown="optionsDeleteSelected(event, this)" />
+        </div>
       </div>
       <div class="canvasContainer"><canvas></canvas></div>
     </div>
@@ -32,9 +35,7 @@
 </head>
 <body class="interiorPanel">
   <div id="canvasesContainer">
-    <div id="objectMenu">
 
-    </div>
   </div>
 </body>
 </html>

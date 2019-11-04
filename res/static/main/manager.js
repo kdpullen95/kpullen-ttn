@@ -139,7 +139,7 @@ function startResize(event, element) {
 }
 
 function startDrag(event, element) {
-  element.parentElement.parentElement.panel.dragging(event.clientX, event.clientY);
+  element.parentElement.panel.dragging(event.clientX, event.clientY);
 }
 
 function closePanel(event, element) {
