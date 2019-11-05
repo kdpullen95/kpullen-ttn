@@ -18,16 +18,24 @@ canvas {
   background-color: rgba(112,128,144,0.25);
 }
 
-.colorContainer {
+.boxContainer {
   position: relative;
   height: 20px;
 }
 
-.colorPicker {
+.colorBox {
   position: absolute;
   top: 0;
   left: 22px;
   width: 18px;
+  height: 18px;
+}
+
+.numBox {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  width: 32px;
   height: 18px;
 }
 

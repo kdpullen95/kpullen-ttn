@@ -13,8 +13,8 @@ var regex = {
   subtract: /\d+(\[.+\])?\s*-\s*\d+/,                           //... subtract
   exponent: /\d+(\[.+\])?\s*\^\s*\d+/,                          //... exponent
   multiply: /\d+(\[.+\])?\s*\*\s*\d+/,                          //... multiply
-  roll: /\d+(\[.+\])?d\d+/,              //rolls dice, #d# format, no space
-  convert: 0,                         //converts between imperial/metri TODOc
+  roll: /\d+(\[.+\])?d\d+(\[.+\])?/,      //rolls dice, #d# format, no space
+  convert: 0,                           //converts between imperial/metri TODOc
 }
 
 
@@ -67,7 +67,7 @@ function parseChatMessage(message) {
   var newstr = '';
   var find;
   while ((find = findRegEx(regex.brackets,str)) !== null) {
-    newstr += find.first + '[' + recParentheses(find.match) + ']';
+    newstr += find.first + '[' + recParentheses(find.matchTrimmed) + ']';
     str = find.last;
   }
   message.content.user = message.user.user;
@@ -81,9 +81,10 @@ function parseChatMessage(message) {
 function recParentheses(str) {
   var find;
   while ((find = findRegEx(regex.parentheses,str)) !== null) {
-    str = find.first + recParentheses(find.match) + find.last;
+    str = find.first + recParentheses(find.matchTrimmed) + find.last;
   }
-  return 0 + str;
+  return '[' + str + ']';
+  return rSearch(str);
   return asSearch(mdSearch(eSearch(rSearch(str))));
 }
 
@@ -92,8 +93,23 @@ function recParentheses(str) {
 //roll - exponent - (multiply - divide) - (add - subtract)
 function rSearch(str) {
   var find;
-  while((find = findRegEx(regex.roll, str)) !== null) {
-
+  var il = 0;
+  while((find = findRegEx(regex.roll, str)) !== null && il < 10) {
+    var nums = find.match.split("d");
+    var rollStr = '';
+    var total = 0;
+    for (var i = 0; i < nums.length; i++) {
+      nums[i] = parseInt(nums[i], 10);
+    }
+    for (var i = 0; i < nums[0]; i++) {
+      var n = Math.floor(Math.random() * nums[1]);
+      total += n;
+      rollStr += n + " ";
+    }
+    str = find.first;
+    str += total + '[R ' + rollStr + '[' + find.match + ']]'
+    str += find.last;
+    il++;
   }
   return str;
 }
@@ -132,7 +148,8 @@ function findRegEx(reg, str) {
   func.log(prefix, [reg.toString(), ' match found: ', res[0]]);
   return {
     first: str.substring(0, res.index),
-    match: res[1],
+    match: res[0],
+    matchTrimmed: res[1],
     last: str.substring(res.index + res[0].length)
   };
 }

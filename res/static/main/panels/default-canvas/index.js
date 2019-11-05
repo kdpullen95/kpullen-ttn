@@ -1,6 +1,7 @@
 var panel;
 var brush = {};
 var objectMenu;
+var count = 0;
 
 function init(panel) {
   this.panel = panel;
@@ -17,7 +18,7 @@ function passMessageOn(message) {
     case 'affirm':
       removePending(message.content.object, message.content.to);
     case 'create':
-      createElements(message.content.object, message.content.to);
+      createElements(message.content.objects, message.content.to);
       break;
     case 'delete':
       deleteElement(message.content.object, message.content.to);
@@ -34,21 +35,39 @@ function passMessageOn(message) {
 }
 
 function createElements(objectsJSON, to) {
-  fabric.util.enlivenObjects(JSON.parse(objectsJSON), (liveObjects) => {
-    liveObjects.forEach( (object) => {
-      object.proppedFlag = true;
-      canvasArray[to].add(object);
-      canvasArray[to].renderAll();
-    });
+  objectsJSON = JSON.parse(objectsJSON);
+  canvasArray[to].renderOnAddRemove = false;
+  objectsJSON.forEach( (object) => {
+    createElement(object, canvasArray[to], {id: object.id});
+  });
+  canvasArray[to].renderOnAddRemove = true;
+  canvasArray[to].renderAll();
+}
+
+function createElement(object, canvas, extraFields) {
+  fabric.util.enlivenObjects([object], (liveObjects) => {
+    liveObjects[0].creationSignalled = true;
+    //spread operator breaks object, so it seems this is the only way
+    liveObjects[0].id = extraFields.id;
+    canvas.add(liveObjects[0]);
   });
 }
 
-function deleteElement(content) {
-
+function deleteElement(object, to) {
+  canvasArray[to].forEachObject( (ob) => {
+    if (object.id == ob.id) {
+      ob.deleteSignalled = true;
+      canvasArray[to].remove(ob);
+    }
+  });
 }
 
-function updateElement(content) {
-
+function updateElement(objects, to) {
+  objects = JSON.parse(objects);
+  objects.forEach( (object) => {
+    deleteElement(object, to);
+    createElement(object, canvasArray[to], {id: object.id});
+  });
 }
 
 function addPending(content) {
@@ -68,28 +87,45 @@ function getCanvasID(object) {
   return 'default'; //todo
 }
 
-function userUpdateElement(object) {
-  var message = {};
-  message.object = JSON.stringify([object]);
-  message.to = getCanvasID(object);
-  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()], message);
+function userUpdateElement(ev) {
+  var object = ev.target; //pay special attention to group object todo
+  if (object.updateSignalled) {
+    object.updateSignalled = false;
+    return;
+  }
+  this.panel.buildMessageAndSend('update', [this.panel.getIdentification()],
+                                {object: JSON.stringify([object.toJSON(["id"])]), to: getCanvasID(object)});
 }
 
 function userDeleteElement(object) {
-  var message = {};
-  message.object.id = object.id;
-  message.to = getCanvasID(object);
-  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()], message);
+  //only one element can be deleted at a time, no need to check?
+  if (object.deleteSignalled) return;
+  this.panel.buildMessageAndSend('delete', [this.panel.getIdentification()],
+                                {object: {id: object.id}, to: getCanvasID(object)});
 }
 
+//todo simulate a click or SOMETHING so that it'll kick the object off the secondary canvas and onto the real one
 function userCreateElement(object) {
-  if (object.proppedFlag) return;
+  object.canvas.renderAll();
+  if (object.creationSignalled) return;
   initializeElement(object);
   var message = {};
-  object.id = new Date().getTime(); //todo make this a more robust id (assign on server?)
-  message.object = JSON.stringify([object]); //why am I dropping info if I don't do this?
+  object.id = generateObjectID();
+  message.objects = JSON.stringify([object.toJSON(["id"])]); //why am I dropping info/unable to enliven if I don't do this?
+                                //specifically, it can't load if I don't do the JSON.stringify and parse it on the other end
   message.to = getCanvasID(object);
+  //gee billy don't you love library bugs
+  object.deleteSignalled = true;
+  canvasArray[message.to].remove(object);
+  createElements(message.objects, message.to);
+  //does this seem ridiculous? it is, but it's the only way to fix a bug of randomly duplicating free lines.
+  //i know for sure i'm not messing with the offset amounts, so i've already ruled that out
   this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
+}
+
+function generateObjectID() {
+  return new Date().getTime() + " count" + (count++);
+  //todo does it need to be more robust? the chances of overlap due to time resync once count is added in are fleetingly low
 }
 
 function alertPanelChange() {
@@ -123,6 +159,12 @@ function optionsLineColor(event, ele) {
   updFreeDraw(canvas);
 }
 
+function optionsLineWidth(event, ele) {
+  var canvas = getCanvas(ele.parentNode);
+  canvas.userLineWidth = ele.value;
+  updFreeDraw(canvas);
+}
+
 function optionsFillColor(event, ele) {
   getCanvas(ele.parentNode).userFillColor = ele.value;
 }
@@ -137,6 +179,14 @@ function optionsPan(event, ele) {
   canvas.isPanningMode = true;
 }
 
+function optionsInsertImage(event, ele) {
+  var canvas = getCanvas(ele);
+  var url = prompt("Enter Image URL: ", "");
+  fabric.Image.fromURL(url, (img) => {
+    canvas.add(img);
+  });
+}
+
 function getCanvas(ele) {
   return ele.parentNode.parentNode.children[1].firstElementChild.firstElementChild.fabric;
 }
@@ -148,10 +198,10 @@ function clearOptionsSelection(canvas) {
 
 function optionsDeleteSelected(event, ele) {
   var canvas = getCanvas(ele.parentNode);
-  console.log(canvas.getActiveObjects());
   canvas.getActiveObjects().forEach( (obj) => {
     canvas.remove(obj);
   });
+  //clear active objects/selection here todo
 }
 
 function clearSelectionMenu(ev) {
@@ -160,6 +210,8 @@ function clearSelectionMenu(ev) {
 }
 
 function openSelectionMenu(objects) {
+  console.log(objects);
+  console.log(canvasArray['default']);
   objects[0].canvas.objectMenu.style.height = "100px";
 }
 
@@ -232,7 +284,7 @@ function initializeCanvas(settings) {
   });
   //!!!!!!!!!END OUTSIDE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  c.fabric.on("object:modified", function(e) { userUpdateElement(e.target); });
+  c.fabric.on("object:modified", function(e) { userUpdateElement(e); });
   c.fabric.on("object:added", function(e) { userCreateElement(e.target); });
   c.fabric.on("object:removed", function(e) { userDeleteElement(e.target); });
   c.fabric.on("selection:updated", function(e) { openSelectionMenu(e.selected) });
@@ -240,9 +292,9 @@ function initializeCanvas(settings) {
   c.fabric.on("selection:cleared", function(e) { clearSelectionMenu(e) });
 
   c.fabric.brushes = initializeBrushes(c.fabric);
-  c.fabric.userLineColor = '#000000'; //todo grab this from html
-  c.fabric.userFillColor = '#ffffff'; //ditto
-  c.fabric.userLineWidth = 3;         //
+  c.fabric.userLineColor = element.querySelector("input.optionsLineColor").value;
+  c.fabric.userFillColor = element.querySelector("input.optionsFillColor").value;
+  c.fabric.userLineWidth = element.querySelector("input.optionsLineWidth").value;
   c.fabric.userBrush = c.fabric.brushes.pencil;
   c.fabric.objectMenu = element.querySelector(".objectMenu");
 
