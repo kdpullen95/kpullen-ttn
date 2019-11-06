@@ -24,7 +24,7 @@ function passMessageOn(message) {
       deleteElement(message.content.object, message.content.to);
       break;
     case 'update':
-      updateElement(message.content.object, message.content.to);
+      updateElement(message.content.objects, message.content.to);
       break;
     case 'init':
       //todo initializeCanvases(msg.content);
@@ -36,6 +36,7 @@ function passMessageOn(message) {
 
 function createElements(objectsJSON, to) {
   objectsJSON = JSON.parse(objectsJSON);
+  console.log(objectsJSON);
   canvasArray[to].renderOnAddRemove = false;
   objectsJSON.forEach( (object) => {
     createElement(object, canvasArray[to], {id: object.id});
@@ -94,7 +95,7 @@ function userUpdateElement(ev) {
     return;
   }
   this.panel.buildMessageAndSend('update', [this.panel.getIdentification()],
-                                {object: JSON.stringify([object.toJSON(["id"])]), to: getCanvasID(object)});
+                                {objects: JSON.stringify([object.toJSON(["id"])]), to: getCanvasID(object)});
 }
 
 function userDeleteElement(object) {
@@ -118,8 +119,6 @@ function userCreateElement(object) {
   object.deleteSignalled = true;
   canvasArray[message.to].remove(object);
   createElements(message.objects, message.to);
-  //does this seem ridiculous? it is, but it's the only way to fix a bug of randomly duplicating free lines.
-  //i know for sure i'm not messing with the offset amounts, so i've already ruled that out
   this.panel.buildMessageAndSend('create', [this.panel.getIdentification()], message);
 }
 

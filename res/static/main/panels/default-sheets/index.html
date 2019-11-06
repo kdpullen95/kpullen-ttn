@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="index.js"></script>
+</head>
+<body>
+  <div id="selections">
+    <select id="panelSelect" onchange="updateOptions()"></select>
+    <input type="text" id="search" placeholder="search..." oninput="runSearch()"/>
+    <div id="loadWhich">
+
+    </div>
+    <button onclick="submitSelection()">Submit</button>
+  </div>
+
+  <div id="sheet"></div>
+
+</body>
+</html>

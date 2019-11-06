@@ -5,11 +5,11 @@ rating system from + to +++++
 Before 10/28
 ++++ Installation and run .bats for any modern windows
 ++ Instructions for manual install
-++ Super basic canvas implementation
+✓✓ Super basic canvas implementation
 ✓✓✓ Make dragging/resizing stop sticking
       - put a high z-level invisible thing over the iframe portion while moving so that it doesn't stick when mouse is over that area
 
-Before 11/10
+Before 11/14
 ✓✓✓✓✓ Rework id/type system to pair them with appl
 +++++ Have server send info to use correct launchpanel regardless of name
 +++++ Finish regex & math for chatPanel
@@ -23,6 +23,8 @@ Before 11/10
 +++ Selective sync/discrete panel movement/resize
     + depending on individual panel settings & user settings
     +++ depending on panel type
+
+Temp
 
 
 fix new introduced bug: can't have duplicates of same id panel on page

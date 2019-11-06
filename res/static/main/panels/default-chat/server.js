@@ -41,10 +41,10 @@ module.exports = {
   },
 
   getSizeValues: function(id) { //TODO
-    return {width: 400, height: 400, top: 0, left: 0}; //int pixels
+    return {width: 400, height: 400, top: 100, left: 100}; //int pixels
   },
 
-  assignID: function() { //TODO
+  assignID: function() {
     return new ObjectID().toHexString();
   },
 
@@ -59,6 +59,10 @@ module.exports = {
       pairArray.push([doc._id, doc._id]); //no human readable names atm
     });
     return pairArray;
+  },
+
+  request: function(message) {
+    return null;
   }
 }
 
@@ -167,5 +171,5 @@ async function loadData(message) {
   if (doc !== null) {
     message.content = doc.messages;
   }
-  return [{ message: message, emitType: 'sender'}]; //TODO
+  return [{ message: message, emitType: 'sender'}];
 }

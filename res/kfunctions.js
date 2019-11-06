@@ -1,6 +1,6 @@
 var verbose = true;
 var mongoDB;
-const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility", "getSavedPanels"]; //TODO move this to a file or something
+const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility", "getSavedPanels", "request"]; //TODO move this to a file or something
 const sharedCollectionsTxt = ["userSettings", "resources", "charSheets", "stateTemplates"]; //TODO ditto
 var userCollection;
 var modFunctions = {}; //access to specific panels files
@@ -176,7 +176,7 @@ async function initPanels(panelList) {
       _this.panelsList[panelList[i]] = mod.name;
     } catch (e) { //TODO are there any important errors that should be let through?
       _this.log(_this.prefix.function, [panelList[i], " failed to initialize. error ->"]);
-      _this.error(e, false);
+      _this.error(e, true);
     }
   }
 }

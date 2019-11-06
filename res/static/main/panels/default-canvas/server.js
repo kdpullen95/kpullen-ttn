@@ -1,22 +1,23 @@
 var func;
 var prefix;
-var mongoCollection;
+var collection;
+var ObjectID = require('mongodb').ObjectID;
 
 module.exports = {
   name: "Canvas Panel", //human readable name
 
-  init: function(parent, folderName, collection) {
+  init: function(parent, folderName, mongoCollection) {
     func = parent;
     prefix = func.prefix.function + "  (" + folderName + ")"; //matches log conventions
-    mongoCollection = collection; //to save things to database
+    collection = mongoCollection; //to save things to database
   },
 
   processMessage: function(message) {
     switch(message.action) {
       case 'init':
         return loadData(message);
-      case 'draw':
-      case 'erase':
+      case 'create':
+      case 'delete':
       case 'update':
         saveData(message);
       default:
@@ -25,27 +26,73 @@ module.exports = {
   },
 
   getSizeValues: function(id) {
-    return {width: 400, height: 400, top: 0, left: 100}; //int pixels
+    return {width: 400, height: 400, top: 100, left: 100}; //int pixels
   },
 
   assignID: function() {
-    return Math.floor(Math.random() * 10000); //use mongodb objid
+    return new ObjectID().toHexString();
   },
 
   signalVisibility: function(message) {
     return true;
   },
 
-  getSavedPanels: function(message) {
-    return [];
+  getSavedPanels: async function(message) {
+    var pairArray = [];
+    var array = await collection.find({}).toArray(); //todo query only specific fields ffs
+    array.forEach((doc) => {
+      pairArray.push([doc._id, doc._id]); //no human readable names atm
+    });
+    return pairArray;
+  },
+
+  request: function(message) {
+    return null;
+  }
+
+}
+
+async function loadData(message) {
+  var doc = await collection.findOne({'_id': message.from.id});
+  var messageArray = [{message: message, emitType: 'sender'}];
+  if (doc == null) return messageArray;
+  //if found, return messages will be object arrays of all non _id fields, one message per array/canvas
+  var keyArray = Object.keys(doc);
+  for (var i = 0; i < keyArray.length; i++) {
+    if (keyArray[i] !== '_id') {
+      messageArray.push({
+        message: { action: 'create', appl: message.appl, content: { objects: JSON.stringify(doc[keyArray[i]]), to: keyArray[i] } },
+        emitType: 'sender',
+      });
+    }
+  }
+  return messageArray;
+}
+
+async function saveData(message) {
+  var objects = message.content.objects ? JSON.parse(message.content.objects) : [message.content.object];
+  //accounts for delete, which is a singular object that does not need parsing
+  for (var i = 0; i < objects.length; i++) { //TODO allow it to appl, not from
+    await databaseRemove(objects[i], message.from.id, message.content.to);
+    if (message.action != 'delete')
+      databaseAdd(objects[i], message.from.id, message.content.to);
   }
 }
 
-function loadData(message) {
-  return [{message: message, emitType: 'sender'}]; //TODO
+async function databaseRemove(object, panelID, canvasID) {
+  var pullObj = {};
+  pullObj[canvasID] = { id: object.id }; //todo find better way to do this?
+  collection.updateOne( {'_id': panelID},
+                        { '$pull': pullObj},
+                        {upsert: false},
+                        () => {} );
 }
 
-function saveData(message) {
-  //todo //put message data over other message data ie a message of x, y
-  //will be put over the object's x, y, rotate, but only replace x, y
+function databaseAdd(object, panelID, canvasID) {
+  var pushObj = {};
+  pushObj[canvasID] = object; //todo find better way to do this?
+  collection.updateOne( {'_id': panelID},
+                        {'$push': pushObj},
+                        {upsert: true},
+                        () => {}  );
 }

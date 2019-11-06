@@ -37,5 +37,11 @@ module.exports = {
 
   getSavedPanels: function(message) {
     return []; //or array of [human readable name, id] pairs
+  },
+
+  request: function(message) {
+    //allows intercommunication between panels server-side, such as requests for info or changes to internal state of a panel next time it gets updated
+    //just return null if no implementation
+    return null;
   }
 }
