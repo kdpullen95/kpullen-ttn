@@ -1,8 +1,9 @@
 var panel;
 
-function init(panel) {
+function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
+  setTheme(themeURL);
   this.panel.buildMessageAndSend('init');
 }
 
@@ -72,4 +73,8 @@ function chatEnterCheck(e) {
     if (code == 13) { //Enter keycode
         sendChatMessage();
     }
+}
+
+function setTheme(url) {
+  document.getElementById("themeCSS").href = url;
 }

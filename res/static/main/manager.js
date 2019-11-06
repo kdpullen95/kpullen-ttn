@@ -173,9 +173,13 @@ function sendBackward(panel) {
 }
 
 function themeSelect(element) { //todo load themes like templates, dynamically
+  var url = "../css/theme-" + element.value + ".css";
   document.getElementById("themeCSS").href = "../css/theme-" + element.value + ".css";
+  Object.values(panelObj).forEach(function(panel) {
+    panel.alertChildtoThemeChange("../../" + url);
+  });
 }
 
-function getTheme() {
-  return document.getElementById("themeCSS").href;
+function getThemeURL() {
+  return "../../" + document.getElementById("themeCSS").href;
 }

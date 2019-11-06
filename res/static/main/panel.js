@@ -137,7 +137,7 @@ class Panel {
     this.updPos(content.loc.top, content.loc.left);
     this.updSize(content.loc.width, content.loc.height);
     this.setzIndex(5);
-    this.element.children[1].contentWindow.init(this);
+    this.element.children[1].contentWindow.init(this, getThemeURL());
   }
 
   passMessageOn(msg) {
@@ -167,6 +167,12 @@ class Panel {
     alertChildtoChange() {
       if (this.child && typeof this.child.alertPanelChange === "function") {
         this.child.alertPanelChange();
+      }
+    }
+
+    alertChildtoThemeChange(url) {
+      if (this.child && typeof this.child.setTheme === "function") {
+        this.child.setTheme(url);
       }
     }
 

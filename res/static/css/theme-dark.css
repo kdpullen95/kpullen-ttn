@@ -1,10 +1,10 @@
-body {
+.bodyStyle {
   background: #2D333B;
   color: lightgrey;
 }
 
 .bordered {
-  border-radius: 12px;
+  border-radius: 0px;
 }
 
 .colorAccentBG {
