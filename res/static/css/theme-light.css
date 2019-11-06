@@ -1,0 +1,32 @@
+body {
+  background: lightgrey;
+  color: black;
+}
+
+.bordered {
+  border-radius: 12px;
+}
+
+.colorAccentBG {
+  background: lightseagreen;
+}
+
+.darkAccentBG {
+  background: slategrey;
+}
+
+.lightAccentBG {
+  background: white;
+}
+
+.lightFontColor {
+  color: #34383E;
+}
+
+.darkFontColor {
+  color: black;
+}
+
+.linkFontColor {
+  color: midnightblue;
+}

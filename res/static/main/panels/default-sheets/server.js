@@ -1,5 +1,5 @@
 module.exports = {
-  name: "Test Panel",
+  name: "Character Sheets",
 
   init: function(manager) {
 

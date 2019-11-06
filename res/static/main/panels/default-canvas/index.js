@@ -181,9 +181,11 @@ function optionsPan(event, ele) {
 function optionsInsertImage(event, ele) {
   var canvas = getCanvas(ele);
   var url = prompt("Enter Image URL: ", "");
-  fabric.Image.fromURL(url, (img) => {
-    canvas.add(img);
-  });
+  if (url !== null && url !== "") {
+    fabric.Image.fromURL(url, (img) => {
+      canvas.add(img);
+    });
+  }
 }
 
 function getCanvas(ele) {

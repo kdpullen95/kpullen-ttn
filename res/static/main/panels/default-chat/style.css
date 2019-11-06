@@ -1,3 +1,11 @@
 .pendingMessage {
   color: red;
 }
+
+.interiorPanel {
+  overflow-x: hidden;
+}
+
+#inputBox {
+  width: 100%;
+}

@@ -66,7 +66,7 @@ class Panel {
   }
 
   deleteSignal() {
-    this.buildMessageAndSend('closePanel');
+    this.buildMessageAndSend('panel:close');
     this.delete();
   }
 
@@ -80,7 +80,7 @@ class Panel {
   }
 
   loadPanel(type, id) {
-    this.buildMessageAndSend('loadPanel', [this.iden], {id: id, type: type});
+    this.buildMessageAndSend('panel:load', [this.iden], {id: id, type: type});
   }
 
   initElement(parent, content) {
@@ -91,7 +91,7 @@ class Panel {
     //so that element-return DOM requests can access panel-specific//
     this.element.children[1].onload = typeof content === 'undefined' ?
         () => {
-      this.buildMessageAndSend('createPanel', [this.iden]);
+      this.buildMessageAndSend('panel:create', [this.iden]);
     } : () => {
       this.firstTimeUpdate(content);
     }
@@ -103,11 +103,11 @@ class Panel {
   }
 
   alertMove() {
-    this.buildMessageAndSend('movePanel', [this.iden], {loc: {top: this.getTop(), left: this.getLeft()}});
+    this.buildMessageAndSend('panel:move', [this.iden], {loc: {top: this.getTop(), left: this.getLeft()}});
   }
 
   alertResize() {
-    this.buildMessageAndSend('resizePanel', [this.iden], {loc: {width: this.getWidth(), height: this.getHeight()}});
+    this.buildMessageAndSend('panel:resize', [this.iden], {loc: {width: this.getWidth(), height: this.getHeight(), z: this.getzIndex()}});
   }
 
   //action: string. appl: who it applies to, content, other
@@ -136,22 +136,23 @@ class Panel {
     this.updID(content.id);
     this.updPos(content.loc.top, content.loc.left);
     this.updSize(content.loc.width, content.loc.height);
+    this.setzIndex(5);
     this.element.children[1].contentWindow.init(this);
   }
 
   passMessageOn(msg) {
     if (msg && typeof(msg.action) !== 'undefined' && this.includesThis(msg.appl)) {
       switch(msg.action) {
-        case 'createPanel':
+        case 'panel:create':
           this.firstTimeUpdate(msg.content);
           break;
-        case 'removePanel':
+        case 'panel:close':
           this.delete();
           break;
-        case 'movePanel':
+        case 'panel:move':
           this.updPos(msg.content.loc.top, msg.content.loc.left);
           break;
-        case 'resizePanel':
+        case 'panel:resize':
           this.updSize(msg.content.loc.width, msg.content.loc.height);
           break;
         default: //otherwise passes it on to the child to figure out //todo function check on server init instead?
@@ -163,25 +164,26 @@ class Panel {
       }
     }
 
-  //############GET/SET##################
-
-  alertChildtoChange() {
-    if (this.child && typeof this.child.alertPanelChange === "function") {
-      this.child.alertPanelChange();
+    alertChildtoChange() {
+      if (this.child && typeof this.child.alertPanelChange === "function") {
+        this.child.alertPanelChange();
+      }
     }
-  }
 
-  updPos(top, left) {
-    this.element.style.top = top + "px";
-    this.element.style.left = left + "px";
-    this.alertChildtoChange();
-  }
+    updPos(top, left) {
+      this.element.style.top = top + "px";
+      this.element.style.left = left + "px";
+      this.alertChildtoChange();
+    }
 
-  updSize(width, height) {
-    this.element.style.width = width + "px";
-    this.element.style.height = height + "px";
-    this.alertChildtoChange();
-  }
+    updSize(width, height) {
+      this.element.style.width = width + "px";
+      this.element.style.height = height + "px";
+      this.alertChildtoChange();
+    }
+
+
+  //############GET/SET##################
 
   assignChild(child) {
     this.child = child;
@@ -203,6 +205,18 @@ class Panel {
 
   getID() {
     return this.iden.id;
+  }
+
+  getzIndex() {
+    return this.element.style.zIndex;
+  }
+
+  modifyzIndex(x) {
+    this.element.style.zIndex = x + parseInt(this.element.style.zIndex);
+  }
+
+  setzIndex(x) {
+    this.element.style.zIndex = x;
   }
 
 //we could collapse this into one function (type) (this.element.style[type])

@@ -45,7 +45,7 @@ function addChatMessage(chatmsg, pending=false) {
     div.id = chatmsg.time;
   }
   var node = document.createTextNode(str);
-  var hoverInfo = date.toLocaleString() + "\nUser: " + chatmsg.user; 
+  var hoverInfo = date.toLocaleString() + "\nUser: " + chatmsg.user;
   //todo make this a proper popout, not a hover title
   div.setAttribute("title", hoverInfo);
   div.appendChild(node);
@@ -55,6 +55,7 @@ function addChatMessage(chatmsg, pending=false) {
 function sendChatMessage() {
   var chatmsg = {};
   chatmsg.message = document.getElementById("inputBox").value;
+  if (chatmsg.message == "") return;
   chatmsg.time = new Date().getTime();
   //todo figure out how to skip/pass values by equality?
   this.panel.buildMessageAndSend('chatmsg', [this.panel.getIdentification()], chatmsg);

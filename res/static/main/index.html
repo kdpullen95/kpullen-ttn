@@ -7,23 +7,34 @@
   <script src="panel.js"></script>
   <script src="manager.js"></script>
   <link rel="stylesheet" href="../css/defstyle.css" type="text/css"/>
+  <link rel="stylesheet" href="../css/theme-light.css" type="text/css" id="themeCSS" />
   <template id="panelTemplate">
-    <div class="panel hidden">
-      <div class="iconBar" onmousedown="startDrag(event, this)">
+    <div class="panel lightAccentBG bordered">
+      <div class="iconBar colorAccentBG" onmousedown="startDrag(event, this)">
       </div>
       <iframe class="iframePanel"></iframe>
-      <img class="resizeIcon icon" src="icons/resizeIcon.jpg" onmousedown="startResize(event, this)" />
-      <img class="closeIcon icon" src="icons/closeIcon.jpg" onmousedown="closePanel(event, this)" />
+      <img class="resizeIcon icon" src="../icons/resizeIcon.png" onmousedown="startResize(event, this)" />
+      <img class="closeIcon icon" src="../icons/closeIcon.png" onmousedown="closePanel(event, this)" />
     </div>
   </template>
 </head>
 <body onload="grabUserDataAndSync()">
   <div id="overlay"> </div>
+  <div id="loadingOverlay" class="darkAccentBG">
+    <div id="loadingBox" class="lightAccentBG">
+      Loading . . .
+    </div>
+  </div>
   <div id="menu">
     <button onclick="addNewPanel()">New Panel</button>
     <button onclick="saveTemplate()">Save Template</button>
     <select id="templateSelect"></select>
     <button onclick="loadTemplate()">Load Template</button>
+    Theme: <select id="themeSelect" oninput="themeSelect(this)">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="ocean">Ocean</option>
+    </select>
   </div>
   <div id="panelContainer"> </div>
 </body>

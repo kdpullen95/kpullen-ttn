@@ -26,7 +26,7 @@ module.exports = {
   },
 
   getSizeValues: function(id) {
-    return {width: 400, height: 400, top: 100, left: 100}; //int pixels
+    return {width: 500, height: 500, top: 100, left: 100}; //int pixels
   },
 
   assignID: function() {

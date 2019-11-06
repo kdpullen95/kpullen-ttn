@@ -40,19 +40,19 @@ module.exports = {
   ////emit types: sender, all, allExceptSender
   processMessage: async function(message, socket, io) {
     switch (message.action) {
-      case 'synchronize':
+      case 'client:synchronize':
         return await synchronizeState();
-      case 'saveCurrentTemplate':
+      case 'template:save':
         return await saveCurrentTemplate(message);
-      case 'loadTemplate':
+      case 'template:load':
         return await loadTemplate(message);
-      case 'loadPanel':
+      case 'panel:load':
         return setLoadToCreate(message);
-      case 'createPanel':
+      case 'panel:create':
         return affirmAndPassOn(this.assignValues(message));
-      case 'movePanel':
-      case 'resizePanel':
-      case 'closePanel':
+      case 'panel:move':
+      case 'panel:resize':
+      case 'panel:close':
           return affirmAndPassOn(message);
       default: //todo operate on appl, not from?
         if (modFunctions[message.from.type])
@@ -236,7 +236,7 @@ function affirmAndPassOn(message) {
 
 //not the most elegant solution...
 function setLoadToCreate(message) {
-  message.action = "createPanel";
+  message.action = "panel:create";
   message.content.loc = _this.getSizeValues(message.content.type, message.content.id);
   if (modFunctions[message.from.type].signalVisibility(message)) {
     return [{message: message, emitType: 'sender'}];
@@ -253,14 +253,14 @@ function setLoadToCreate(message) {
 
 function updateState(message) {
   switch(message.action) {
-    case 'createPanel':
+    case 'panel:create':
       addStateEntry(message);
       break;
-    case 'movePanel':
-    case 'resizePanel':
+    case 'panel:move':
+    case 'panel:resize':
       updateStateValues(message);
       break;
-    case 'closePanel':
+    case 'panel:close':
       removeStateEntries(message);
   }
 }
@@ -289,9 +289,9 @@ function removeStateEntries(message) {
 async function synchronizeState(emit = 'sender', clear = true) {
   var content = [];
   if (clear)
-    content.push({action: 'clearTemplate'});
+    content.push({action: 'template:clear'});
   content.push(await getDatabaseTemplates());
-  return [{ message: { action: 'bulk', content: content.concat(Object.values(stateObj)), },
+  return [{ message: { action: 'client:bulk', content: content.concat(Object.values(stateObj)), },
             emitType: emit }];
 }
 
@@ -310,7 +310,7 @@ async function loadTemplate(message) {
 }
 
 async function getDatabaseTemplates(message = {content: {}}) {
-  message.action = 'updateTemplateList';
+  message.action = 'template:updateList';
   message.content.infoArray = [];
   var array = await _this.sharedCollections.stateTemplates.find({}).toArray();
   array.forEach((doc) => {

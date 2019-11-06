@@ -9,6 +9,10 @@ canvas {
   z-index: 1;
 }
 
+.interiorPanel {
+  overflow: hidden;
+}
+
 .canvasBar {
   width: 50px;
   z-index: 2;

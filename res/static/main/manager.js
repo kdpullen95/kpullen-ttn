@@ -28,15 +28,13 @@ function grabUserDataAndSync() {
 
 function processMessage(msg) {
   if (!msg) return;
-  if (msg.action === 'createPanel' && !msg.affirm) {
+  if (msg.action === 'panel:create' && !msg.affirm) {
     addPanel(new Panel(msg.content.type, msg.content.id), msg.content);
-  } else if (msg.action === 'closePanel' && !msg.affirm) {
-    removePanels(msg.appl);
-  } else if (msg.action === 'clearTemplate') {
+  } else if (msg.action === 'template:clear') {
     clear();
-  } else if (msg.action === 'updateTemplateList') {
+  } else if (msg.action === 'template:updateList') {
     updateTemplateList(msg);
-  } else if (msg.action === 'bulk') {
+  } else if (msg.action === 'client:bulk') {
     msg.content.forEach( (message) => {
       processMessage(message);
     });
@@ -48,7 +46,7 @@ function processMessage(msg) {
 }
 
 function synchronizationRequest() {
-  sendMessageToServer({action: "synchronize", from: {type: 'manager'}});
+  sendMessageToServer({action: "client:synchronize", from: {type: 'manager'}});
 }
 
 function clear() {
@@ -97,7 +95,7 @@ function saveTemplate() {
     if (name === "") {
       name = new Date().getTime();
     }
-    sendMessageToServer({action: 'saveCurrentTemplate', content: {name: name}});
+    sendMessageToServer({action: 'template:save', content: {name: name}});
   }
 }
 
@@ -120,7 +118,7 @@ function updateTemplateList(message) {
 function loadTemplate() {
   selectEle = document.getElementById("templateSelect");
   if (selectEle.value !== "") {
-    sendMessageToServer({action: "loadTemplate", content: {id: selectEle.value}});
+    sendMessageToServer({action: "template:load", content: {id: selectEle.value}});
   }
 }
 
@@ -134,14 +132,50 @@ function updatePanelID(oldStrID, panel) {
 }
 
 function startResize(event, element) {
-  element.parentElement.panel.resizing(event.clientX, event.clientY);
+  var p = element.parentElement.panel;
+  p.resizing(event.clientX, event.clientY);
 
 }
 
 function startDrag(event, element) {
-  element.parentElement.panel.dragging(event.clientX, event.clientY);
+  var p = element.parentElement.panel;
+  bringToFront(p);
+  p.dragging(event.clientX, event.clientY);
 }
 
 function closePanel(event, element) {
   element.parentElement.panel.deleteSignal();
+}
+
+function bringToFront(panel) {
+  var max = 0;
+  Object.values(panelObj).forEach((p) => {
+    max = p.getzIndex() > max ? p.getzIndex() : max;
+    console.log("max set to " + max);
+    if (p.getzIndex() >= panel.getzIndex() && p.getzIndex() > 1) {
+      p.modifyzIndex(-1);
+      console.log("modifying zindex down one to " + p.getzIndex());
+    }
+  });
+  panel.setzIndex(max);
+}
+
+function sendToBack(panel) {
+
+}
+
+function bringForward(panel) {
+
+}
+
+function sendBackward(panel) {
+
+}
+
+function themeSelect(element) { //todo load themes like templates, dynamically
+  document.getElementById("themeCSS").href = "../css/theme-" + element.value + ".css";
+}
+
+function getTheme() {
+  return document.getElementById("themeCSS").href;
 }
