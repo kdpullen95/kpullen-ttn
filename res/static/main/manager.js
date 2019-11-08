@@ -3,6 +3,7 @@ var socket = io();
 var defaultIDNum = 1;
 var templateList;
 var user;
+var menuShow = true;
 
 socket.on('res', function (msg) {
   log(['received message: ', msg]);
@@ -22,7 +23,7 @@ function getURLVars() {
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 function grabUserDataAndSync() {
-  user = {user: getURLVars()['user'], k: getURLVars()['k']};
+  user = {name: getURLVars()['user'], k: getURLVars()['k']};
   synchronizationRequest();
 }
 
@@ -34,6 +35,8 @@ function processMessage(msg) {
     clear();
   } else if (msg.action === 'template:updateList') {
     updateTemplateList(msg);
+  } else if (msg.action === 'theme:updateList') {
+    updateThemeList(msg);
   } else if (msg.action === 'client:bulk') {
     msg.content.forEach( (message) => {
       processMessage(message);
@@ -53,14 +56,6 @@ function clear() {
   Object.values(panelObj).forEach(function(panel) {
     panel.delete(); //todo more elegant solution + allow panels to be marked not clearing
   });
-}
-
-function startup() {
-  clear();
-  //P
-  //get panel list and ids
-  //push them all to a panel array (not panel array)
-  //let initElement do the rest
 }
 
 function sendMessageToServer(mes) {
@@ -102,10 +97,8 @@ function saveTemplate() {
 function updateTemplateList(message) {
   templateList = message.content.infoArray;
   var select = document.getElementById('templateSelect');
-  var options = Array.from(select.options);
-  options.forEach( (option) => {
-    if (option.value !== "")
-      select.remove(option);
+  Array.from(select.options).forEach( (option) => {
+    select.remove(option);
   });
   templateList.forEach( (template) => {
     var opt = document.createElement("option");
@@ -113,6 +106,21 @@ function updateTemplateList(message) {
     opt.text = template.name;
     select.add(opt);
   });
+}
+
+function updateThemeList(message) {
+  var select = document.getElementById("themeSelect");
+  Array.from(select.options).forEach( (option) => {
+    select.remove(option);
+  });
+  message.content.themeArray.forEach( (theme) => {
+    var opt = document.createElement("option");
+    opt.value = theme;
+    opt.text = theme.slice(0, -4);
+    select.add(opt);
+  });
+  select.value = message.content.default;
+  themeSelect(select);
 }
 
 function loadTemplate() {
@@ -151,10 +159,8 @@ function bringToFront(panel) {
   var max = 0;
   Object.values(panelObj).forEach((p) => {
     max = p.getzIndex() > max ? p.getzIndex() : max;
-    console.log("max set to " + max);
     if (p.getzIndex() >= panel.getzIndex() && p.getzIndex() > 1) {
       p.modifyzIndex(-1);
-      console.log("modifying zindex down one to " + p.getzIndex());
     }
   });
   panel.setzIndex(max);
@@ -173,13 +179,24 @@ function sendBackward(panel) {
 }
 
 function themeSelect(element) { //todo load themes like templates, dynamically
-  var url = "../css/theme-" + element.value + ".css";
-  document.getElementById("themeCSS").href = "../css/theme-" + element.value + ".css";
+  var url = "../css/themes/" + element.value;
+  document.getElementById("themeCSS").href = url;
   Object.values(panelObj).forEach(function(panel) {
     panel.alertChildtoThemeChange("../../" + url);
   });
 }
 
+function hideShowMenu(element) {
+  if (menuShow) {
+    element.src = "../icons/showMenu.png";
+    document.getElementById("menuContainer").style.height = "0px";
+  } else {
+    element.src = "../icons/hideMenu.png";
+    document.getElementById("menuContainer").style.height = "auto";
+  }
+  menuShow = !menuShow;
+}
+
 function getThemeURL() {
-  return "../../" + document.getElementById("themeCSS").href;
+  return "../../../css/themes/" + document.getElementById("themeSelect").value;
 }

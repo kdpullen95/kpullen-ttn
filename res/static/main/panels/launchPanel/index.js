@@ -1,9 +1,11 @@
 var panel;
 var databasePanels;
 
-function init(panel) {
+function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
+  setTheme(themeURL); //twice is bug workaround.
+  setTheme(themeURL);
   this.panel.buildMessageAndSend('init');
 }
 
@@ -43,7 +45,7 @@ function buildCheckDOM(label, value) {
   check.setAttribute("type", "checkbox");
   check.setAttribute("value", value);
   var div = document.createElement("DIV");
-  div.appendChild(check);
+  div.appendChild(check); //todo label=
   div.appendChild(document.createTextNode(label));
   return div;
 }
@@ -64,4 +66,8 @@ function submitSelection() {
     }
   }
   this.panel.delete();
+}
+
+function setTheme(url) {
+  document.getElementById("themeCSS").href = url;
 }

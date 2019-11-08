@@ -74,7 +74,7 @@ function parseChatMessage(message) {
     newstr += find.first + '[' + recParentheses(find.matchTrimmed) + ']';
     str = find.last;
   }
-  message.content.user = message.user.user;
+  message.content.user = message.user.name;
   message.content.message = newstr + str;
   saveData(message);
   var affirm = func.shallowClone(message);

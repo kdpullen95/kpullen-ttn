@@ -28,6 +28,8 @@ const adminPanelName = typeof process.argv[4] !== 'undefined' ? process.argv[4] 
 func.setVerbose(!(process.argv[5] === 'f')); //5
 //end COMMAND-LINE OPTIONS
 
+var activeUsers = {};
+
 //CLEANUP
 process.on('exit', (code) => {
   func.log(func.prefix.default, ['beginning EXIT cleanup, code ', code]);
@@ -39,15 +41,15 @@ process.on('exit', (code) => {
 //why: security. then panelList will be part of command-line options
 var statloc = path.join(__dirname, "static");
 var panelList = fs.readdirSync(__dirname + "/static/main/panels/");
-var activeUsers = {};
 //end TODO
+
+var themeList = fs.readdirSync(__dirname + "/static/css/themes/");
 
 //INITIALIZATION
 initialize();
 //forces this to complete before the server is open for business using chains of awaits
-//todo probably could turn this last one into a callback instead
 async function initialize() {
-  await func.init(panelList, mongoClient, databaseName, adminPanelName);
+  await func.init(panelList, mongoClient, databaseName, adminPanelName, themeList);
   func.log(func.prefix.default, 'database & panels initialization completed');
   //the above MUST complete before any connections are accepted.
   runServer();
@@ -59,6 +61,10 @@ function runServer() {
   io.on('connection', function(socket) {
     func.log(func.prefix.socket, ['user connected']);
     socket.on('serv', async function(message){
+      if (!authUserKey(message)) {
+        func.log(func.prefix.socket, ['incorrectly authorized or unauthorized user ' + message.user + ' rejected & socket closed'])
+        socket.disconnect();
+      }
       func.log(func.prefix.socket, ['received message: ', message]);
       try {
         messageCollection = await func.processMessage(message);
@@ -89,8 +95,9 @@ function runServer() {
     if (func.authUser(req.body.user, req.body.pin)) {
       addUserKey(req.body.user);
       res.json({user: req.body.user, k: activeUsers[req.body.user].k});
+    } else {
+      res.json({incorrect: true});
     }
-    res.end('login incorrect');
   });
 
   server.listen(port, () => func.log(func.prefix.express, ['listening on port ', port], true));
@@ -120,6 +127,11 @@ function sendResponses(messageCollection, socket, io) {
   });
 }
 
+function authUserKey(message) { //wholly unfinished/bad security,
+  //but sets the stage for permissions, so
+  return activeUsers[message.user.name].k === message.user.k
+}
+
 function addUserKey(user) { //wholly unfinished
-  activeUsers[user] = {k: new ObjectID().toHexString()};
+  activeUsers[user] = {k: new ObjectID().toHexString(), expiry: new Date()};
 }

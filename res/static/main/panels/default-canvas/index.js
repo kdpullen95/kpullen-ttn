@@ -3,9 +3,11 @@ var brush = {};
 var objectMenu;
 var count = 0;
 
-function init(panel) {
+function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
+  setTheme(themeURL); //todo figure out why first request receives wrong MIME, then delete
+  setTheme(themeURL);
   this.panel.buildMessageAndSend('init');
 }
 
@@ -221,6 +223,10 @@ function openSelectionMenu(objects) {
 //******************************************************************************
 //******************************************************************************
 //****************************INITIALIZATION************************************
+
+function setTheme(url) {
+  document.getElementById("themeCSS").href = url;
+}
 
 function initializeElement(object) {
   //put any init stuff here

@@ -1,0 +1,15 @@
+button {
+
+}
+
+#notesBox {
+  width: 100%;
+}
+
+#mainContainer {
+  display: none;
+}
+
+#notes {
+  display: none;
+}

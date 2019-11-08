@@ -16,6 +16,7 @@
 .iframePanel {
   flex-grow: 1;
   width: 100%;
+  border-style: none;
 }
 
 .iconBar {
@@ -34,10 +35,36 @@
 
 .closeIcon {
   position: absolute;
-  top: 0px;
-  right: 0px;
+  top: 1px;
+  right: 1px;
   height: 15px;
   width: 15px;
+}
+
+#alertLoginFailed {
+  visibility: hidden;
+  color: red;
+}
+
+#menu {
+  margin: 20px;
+}
+
+#hideShowMenu {
+  position: fixed;
+  right: 0px;
+  top: -8px;
+  margin: 20px;
+  z-index: 9999;
+}
+
+#menuContainer {
+  z-index: 9998;
+  position: fixed;
+  top: -5px;
+  left: -5px;
+  width: calc(100% + 10px);
+  overflow: hidden;
 }
 
 #panelContainer {

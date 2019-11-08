@@ -2,10 +2,10 @@ var verbose = true;
 var mongoDB;
 const reqFunctions = ["init", "processMessage", "getSizeValues", "assignID", "signalVisibility", "getSavedPanels", "request"]; //TODO move this to a file or something
 const sharedCollectionsTxt = ["userSettings", "resources", "charSheets", "stateTemplates"]; //TODO ditto
-var userCollection;
 var modFunctions = {}; //access to specific panels files
 var stateObj = {}; //keeps a running record of the current state of panels
-const ObjectID = require('mongodb').ObjectID;
+var permissionCollection, userCollection; //kfunction-only collections
+const ObjectID = require('mongodb').ObjectID; //create IDs!
 
 //****************************************************************************
 
@@ -15,7 +15,8 @@ module.exports = {
 
   sharedCollections: {},
 
-  init: async function(panelList, mongoClient, databaseName, adminPanelName) {
+  init: async function(panelList, mongoClient, databaseName, adminPanelName, themeList) {
+    this.themeList = themeList;
     await dbStartup(mongoClient, databaseName);
     await initOtherCollections();
     await initPanels(panelList);
@@ -64,26 +65,44 @@ module.exports = {
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-  checkPermission: function (user, permissionCode, type) {
-    //types v - view, e - edit, c - control
-    //TODO access user collection and checks to see if they have that permission or not, boolean return
-    //permissioncodes are in the format of 'type-identifier', where the type is the type of permission
-    //and identifier is the subtype, so permission to see things flagged as 'foo' in the database would
-    //be chceked via checkPermission(userName, 'resourcePanel-flag:foo', 'v') or similar. Permissions can only
-    //be set by someone with checkPermission(user, permissionCode, 'c') for a specific code
-    return true;
+  //types v - view, e - edit, c - control
+  //TODO access user collection and checks to see if they have that permission or not, boolean return
+  //permissioncodes are in the format of 'type-identifier', where the type is the type of permission
+  //and identifier is the subtype, so permission to see things flagged as 'foo' in the database would
+  //be chceked via checkPermission(userName, 'resourcePanel-flag:foo') or similar. Permissions can only
+  //be set by someone with checkPermission(user, permissionCode) === 'c' for a specific code OR by an active
+  //panel/server element. Pass "this" as authUser if panel server.js file, those get instant 'c' permissions.
+
+  getPermissionType: async function (user, permissionCode, type) {
+    var field = {};
+    field[user] = 1;
+    return await permissionCollection.findOne(  {'code': permissionCode },
+                                                field,
+                                                () => {} );
   },
 
-  setPermission: function (authUser, user, permissionCode, to) {
-    if (this.checkPermission(authUser, permissionCode, 'c')) {
-      //todo set permission of user for permissionCode to to
+  setPermission: async function (authUser, user, permissionCode, to) {
+    if (activeElement(authUser) || await this.getPermissionType(authUser, permissionCode) === 'c') {
+      var field = {};
+      field[user] = to;
+      permissionCollection.updateOne( {'code': permissionCode},
+                                      field,
+                                      {upsert: true},
+                                      () => {} );
     } else {
       throw new Error("User " + authUser + " not authorized to set permissions on " + permissionCode);
     }
   },
 
   authUser: function(user, pin) {
-    return true; //TODO
+    //BIG TODO (eventually the hashed (+salted?) passwords will be stored in a database)
+    if (user === "test01" && pin === "test01") {
+      return true;
+    }
+    if (user === "test02" && pin === "test02") {
+      return true;
+    }
+    return false;
   },
 
   assignValues: function(message) {
@@ -163,6 +182,10 @@ function dateline(str) {
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+function activeElement(authUser) {
+  return true; //todo
+}
+
 async function initPanels(panelList) {
   _this.log(_this.prefix.function, "Loading server-side panel files...", true);
   for (var i in panelList) { //todo rewrite into foreach
@@ -195,6 +218,7 @@ async function initOtherCollections() {
     _this.sharedCollections[element] = await mongoDB.collection(element);
   });
   userCollection = await mongoDB.collection("users");
+  permissionCollection = await mongoDB.collection("permissions");
   _this.log(_this.prefix.mongo, ["standalone collections initialized."]);
 }
 
@@ -290,6 +314,7 @@ async function synchronizeState(emit = 'sender', clear = true) {
   var content = [];
   if (clear)
     content.push({action: 'template:clear'});
+  content.push({action: 'theme:updateList', content: {themeArray: _this.themeList, default: 'light.css'}}); //todo move to first time connection sync if implemeneted
   content.push(await getDatabaseTemplates());
   return [{ message: { action: 'client:bulk', content: content.concat(Object.values(stateObj)), },
             emitType: emit }];

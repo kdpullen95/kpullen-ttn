@@ -20,7 +20,7 @@ module.exports = {
   },
 
   getSizeValues: function(id) { //no database data means always default size
-    return {width: 300, height: 200, top: 50, left: 50};
+    return {width: 400, height: 400, top: 100, left: 100};
   },
 
   assignID: function() {

@@ -1,0 +1,67 @@
+button, select, input, textarea {
+  background-color: #0b0d0f;
+  color: lightgrey;
+  border-color: #5181a9 #ff8000 #ff8000 #5181a9;
+}
+
+label {
+  color: lightgrey;
+}
+
+::-webkit-scrollbar {
+  width: 15px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0d0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0b0d0f;
+  border-style: solid none solid solid;
+  border-width: thin;
+  border-color: #ff8000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8000;
+}
+
+.bodyStyle {
+  background: #0b0d0f;
+  color: lightgrey;
+}
+
+.bordered {
+  border-color: #5181a9 #ff8000 #ff8000 #5181a9;
+  border-width: thin;
+  border-style: solid;
+}
+
+.colorAccentBG {
+  background: #426a8a;
+}
+
+.darkAccentBG {
+  background: black;
+}
+
+.lightAccentBG {
+  background: #16191d;
+}
+
+.lightestAccentBG {
+  background: #21262c;
+}
+
+.lightFontColor {
+  color: #cbdae6;
+}
+
+.darkFontColor {
+  color: grey;
+}
+
+.linkFontColor {
+  color: skyblue;
+}

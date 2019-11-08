@@ -1,10 +1,19 @@
+button, select, input, textarea {
+  background-color: #21262c;
+  color: lightgrey;
+  border-color: #4f5964;
+}
+
 .bodyStyle {
-  background: #2D333B;
+  background: #21262c;
   color: lightgrey;
 }
 
 .bordered {
   border-radius: 0px;
+  border-color: #4f5964;
+  border-width: thin;
+  border-style: solid;
 }
 
 .colorAccentBG {
@@ -12,10 +21,14 @@
 }
 
 .darkAccentBG {
-  background: black;
+  background: #161a1d;
 }
 
 .lightAccentBG {
+  background: #2d3239;
+}
+
+.lightestAccentBG {
   background: #394048;
 }
 

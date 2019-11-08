@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <script src="index.js"></script>
+  <link rel="stylesheet" href="../../../css/defstyle.css" type="text/css"/>
+  <link rel="stylesheet" type="text/css" id="themeCSS" />
 </head>
-<body>
+<body class="interiorPanel" class="lightAccentBG lightFontColor">
   <div id="selections">
-    <select id="panelSelect" onchange="updateOptions()"></select>
-    <input type="text" id="search" placeholder="search..." oninput="runSearch()"/>
-    <div id="loadWhich">
+    <select id="panelSelect" onchange="updateOptions()" class="lightestAccentBG bordered lightFontColor"></select>
+    <input type="text" id="search" placeholder="search..." oninput="runSearch()" class="lightestAccentBG bordered lightFontColor"/>
+    <div id="loadWhich" class="lightFontColor">
 
     </div>
     <div>
-      <input type="text" id="readableName" placeholder"custom name..." />
+      <input type="text" id="readableName" placeholder"custom name..." class="lightestAccentBG bordered lightFontColor"/>
     </div>
-    <button onclick="submitSelection()">Submit</button>
+    <button onclick="submitSelection()" class="lightestAccentBG bordered lightFontColor">Submit</button>
   </div>
 </body>
 </html>

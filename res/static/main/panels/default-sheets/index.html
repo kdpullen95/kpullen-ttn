@@ -3,18 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <script src="index.js"></script>
+  <link rel="stylesheet" href="../../../css/defstyle.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" id="themeCSS" />
+  <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
-<body>
-  <div id="selections">
-    <select id="panelSelect" onchange="updateOptions()"></select>
-    <input type="text" id="search" placeholder="search..." oninput="runSearch()"/>
-    <div id="loadWhich">
-
-    </div>
-    <button onclick="submitSelection()">Submit</button>
+<body class="interiorPanel" class="lightAccentBG">
+  <div id="loadPage">
+    <input type="text" id="searchSheets" placeholder="search..." oninput="runSearch()" />
+    <div id="loadWhich"></div>
+    <button onclick="submitSelection()">Load</button>
   </div>
-
-  <div id="sheet"></div>
-
+  <div id="mainContainer">
+    <div id="tabMenu">
+      <button onclick="switchSheet()" class="bodyStyle">Sheet</button>
+      <button onclick="switchEdit()" class="bodyStyle">Edit</button>
+      <button onclick="switchNotes()" class="bodyStyle">Notes</button>
+    </div>
+    <div id="pageContainer">
+      <div id="sheet"></div>
+      <div id="edit"></div>
+      <div id="notes">
+        <input type="text" id="searchNotes" placeholder="search..." oninput="runSearch()" />
+        <textarea id="notesBox" onkeypress="chatEnterCheck(event, this)" placeholder="..." class="lightestAccentBG lightFontColor"></textarea>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

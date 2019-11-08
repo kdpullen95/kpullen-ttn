@@ -4,7 +4,9 @@
 }
 
 .bordered {
-  border-radius: 4px;
+  border-style: solid;
+  border-width: thin;
+  border-color: #a6a6a6;
 }
 
 .colorAccentBG {
@@ -12,10 +14,14 @@
 }
 
 .darkAccentBG {
-  background: slategrey;
+  background: #a6a6a6;
 }
 
 .lightAccentBG {
+  background: #e1e6ea;
+}
+
+.lightestAccentBG {
   background: white;
 }
 

@@ -1,0 +1,44 @@
+button, select, input, textarea {
+  background-color: steelblue;
+  color: black;
+  border-color: #a9c7d6;
+}
+
+.bodyStyle {
+  background: steelblue;
+  color: black;
+}
+
+.bordered {
+  border-style: solid;
+  border-width: thin;
+  border-color: #a9c7d6;
+}
+
+.colorAccentBG {
+  background: lightseagreen;
+}
+
+.darkAccentBG {
+  background: #396a93;
+}
+
+.lightAccentBG {
+  background: #a9c7d6;
+}
+
+.lightestAccentBG {
+  background: #cbdde6;
+}
+
+.lightFontColor {
+  color: #001233;
+}
+
+.darkFontColor {
+  color: black;
+}
+
+.linkFontColor {
+  color: midnightblue;
+}

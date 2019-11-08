@@ -3,6 +3,7 @@ var panel;
 function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
+  setTheme(themeURL); //todo figure out why first request receives wrong MIME, then delete
   setTheme(themeURL);
   this.panel.buildMessageAndSend('init');
 }
@@ -51,6 +52,8 @@ function addChatMessage(chatmsg, pending=false) {
   div.setAttribute("title", hoverInfo);
   div.appendChild(node);
   div.appendChild(document.createElement("HR"));
+  // var condiv = document.getElementById("chat");
+  // condiv.scrollTop = condiv.scrollHeight;
 }
 
 function sendChatMessage() {
