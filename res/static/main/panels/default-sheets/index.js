@@ -1,3 +1,6 @@
+const editTemplate = '<div class="lightFontColor">#value#: <input type="text" data-targetID="#value#" class="editFields" autocomplete="new-password"/></div>';
+const radioTemplate = '<div class="lightFontColor"><input type="radio" value="#value#" name="sheetSelect" data-type="#type#"/> #label#</div>';
+
 function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
@@ -17,26 +20,31 @@ function passMessageOn(message) {
   }
 }
 
+function saveChanges() {
+  var edits = document.getElementsByClassName("editFields");
+  var changeObj = {};
+  for (let element of edits) {
+    if (element.value !== "")
+      changeObj[element.dataset.targetid] = element.value;
+      document.getElementById(element.dataset.targetid).innerHTML = element.value;
+  }
+  console.log(changeObj);
+}
+
 function populateSheets(message) {
   var div = document.getElementById('loadPage');
   message.content.sheetArray.forEach( (sheet) => {
-    div.appendChild(buildRadioDOM("[" + sheet.type + "] " + sheet.label, sheet.value, sheet.type));
+    console.log(buildRadioDOM("[" + sheet.type + "] " + sheet.label, sheet.value, sheet.type));
+    div.innerHTML += buildRadioDOM("[" + sheet.type + "] " + sheet.label, sheet.value, sheet.type);
   });
 }
 
 function buildRadioDOM(label, value, type) {
-  var radio = document.createElement("INPUT");
-  radio.setAttribute("type", "radio");
-  radio.setAttribute("value", value);
-  radio.setAttribute("name", "sheetSelect");
-  radio.setAttribute("data-type", type);
-  var l = document.createElement("label");
-  l.appendChild(radio); //todo label= works?
-  l.innerHTML += label;
-  //div.appendChild(document.createTextNode(label));
-  var div = document.createElement("DIV");
-  div.appendChild(l);
-  return div;
+  return radioTemplate.replace(/#label#/, label).replace(/#value#/, value).replace(/#type#/, type);
+}
+
+function buildEditableBox(value) {
+  return editTemplate.replace(/#value#/g, value);
 }
 
 function initSheet(message) {
@@ -45,9 +53,13 @@ function initSheet(message) {
   delete message.content._html;
   delete message.content._id;
   var edit = document.getElementById("edit");
-
+  var editable = document.getElementsByClassName("edit");
+  for (let element of editable) {
+    edit.innerHTML += buildEditableBox(element.id);
+  }
   document.getElementById("loadPage").style.display = "none";
   document.getElementById("mainContainer").style.display = "block";
+  switchSheet();
 }
 
 function submitSelection() {

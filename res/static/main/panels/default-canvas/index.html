@@ -10,26 +10,30 @@
   <template id="canvasTemplate">
     <div class="indivCanvas">
       <div class="canvasBar">
-        <img class="optionsFreeDraw icon" src="icons/optionsFreeDraw.png" onmousedown="optionsFreeDraw(event, this)" />
-        <img class="optionsCreateShape icon" src="icons/optionsCreateShape.png" onmousedown="optionsCreateShape(event, this)"/>
+        <img class="userFreeDraw icon" src="icons/userFreeDraw.png" onmousedown="userFreeDraw(event, this)" />
+        <img class="userCreateShape icon" src="icons/userCreateShape.png" onmousedown="userCreateShape(event, this)"/>
         <div class="boxContainer">
-          <input type="color" class="colorBox optionsLineColor" value='#006600' onchange="optionsLineColor(event, this)">
-          <img class="optionsLineColor icon overlayColor" src="icons/optionsLineColor.png" />
+          <input type="color" class="colorBox userLineColor" value='#006600' onchange="userLineColor(event, this)">
+          <img class="userLineColor icon overlayColor" src="icons/userLineColor.png" />
         </div>
         <div class="boxContainer">
-          <input type="color" class="colorBox optionsFillColor" value='#66ffff' onchange="optionsFillColor(event, this)">
-          <img class="optionsFillColor icon overlayColor" src="icons/optionsFillColor.png" />
+          <img class="userLineWidth icon" src="icons/userLineWidth.png" />
+          <input type="number" class="numBox userLineWidth" value="3" min="1" step="1" onchange="userLineWidth(event, this)" />
         </div>
         <div class="boxContainer">
-          <img class="optionsLineWidth icon" src="icons/optionsLineWidth.png" />
-          <input type="number" class="numBox optionsLineWidth" value="3" min="1" step="1" onchange="optionsLineWidth(event, this)" />
+          <input type="color" class="colorBox userFillColor" value='#66ffff' onchange="userFillColor(event, this)">
+          <img class="userFillColor icon overlayColor" src="icons/userFillColor.png" />
         </div>
-        <img class="optionsMouse icon" src="icons/optionsMouse.png" onmousedown="optionsMouse(event, this)" />
-        <img class="optionsPan icon" src="icons/optionsPan.png" onmousedown="optionsPan(event, this)"  />
-        <img class="optionsErase icon" src="icons/optionsErase.png" onmousedown="optionsErase(event, this)" />
-        <img class="optionsInsertImage icon" src="icons/optionsInsertImage.png" onmouseup="optionsInsertImage(event, this)" />
+        <div class="boxContainer">
+          <input type="color" class="colorBox backgroundColor" value='#e6e6e6' onchange="userBackgroundColor(event, this)">
+          <img class="backgroundColor icon overlayColor" src="icons/backgroundColor.png" />
+        </div>
+        <img class="userMouse icon" src="icons/userMouse.png" onmousedown="userMouse(event, this)" />
+        <img class="userPan icon" src="icons/userPan.png" onmousedown="userPan(event, this)"  />
+        <img class="userErase icon" src="icons/userErase.png" onmousedown="userErase(event, this)" />
+        <img class="userInsertImage icon" src="icons/userInsertImage.png" onmouseup="userInsertImage(event, this)" />
         <div class="objectMenu">
-          <img class="optionsDelete icon" src="icons/optionsDelete.png" onmousedown="optionsDeleteSelected(event, this)" />
+          <img class="userDelete icon" src="icons/userDelete.png" onmousedown="userDeleteSelected(event, this)" />
         </div>
       </div>
       <div class="canvasContainer"><canvas></canvas></div>

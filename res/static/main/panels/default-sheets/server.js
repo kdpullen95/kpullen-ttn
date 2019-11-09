@@ -70,6 +70,7 @@ async function initSheet(message) {
   }
   var type = message.content.type;
   message.content = await loadCharacterData(id);
+  if (message.content == null) message.content = {};
   message.content._html = loadSheetTemplate(type);
   return [{message: message, emitType: 'sender'}];
 }

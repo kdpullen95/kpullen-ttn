@@ -21,7 +21,7 @@ class Panel {
 
   //todo fix repetitiveness. Is there a way to combine these that doesn't make things worse?
   //todo is setting them directly via .onmousewhatever good practice? find out, fix
-  //todo don't alert on tiny moves
+  //todo don't alert on tiny moves or stray clicks
   resizing(clickLeft, clickTop) {
     log(["start resize drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
     this.documentOverlay(true);

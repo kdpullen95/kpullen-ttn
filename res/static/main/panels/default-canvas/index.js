@@ -28,6 +28,9 @@ function passMessageOn(message) {
     case 'update':
       updateElement(message.content.objects, message.content.to);
       break;
+    case 'updateSettings':
+      updateCanvasSettings(message.content.settings, message.content.to);
+      break;
     case 'init':
       //todo initializeCanvases(msg.content);
       initializeCanvases({canvasSettings: [{id:'default'}]});
@@ -63,6 +66,13 @@ function deleteElement(object, to) {
       canvasArray[to].remove(ob);
     }
   });
+}
+
+function updateCanvasSettings(settings, to) {
+  Object.keys(settings).forEach((key) => {
+    setUpdate(key, settings[key], to);
+  });
+  canvasArray[to].renderAll();
 }
 
 function updateElement(objects, to) {
@@ -137,9 +147,9 @@ function alertPanelChange() {
   }
 }
 
-function optionsFreeDraw(event, ele) {
+function userFreeDraw(event, ele) {
   var canvas = getCanvas(ele);
-  clearOptionsSelection(canvas);
+  clearUserSelection(canvas);
   updFreeDraw(canvas);
   canvas.isDrawingMode = true;
 }
@@ -150,37 +160,45 @@ function updFreeDraw(canvas) {
   canvas.freeDrawingBrush.width = canvas.userLineWidth;
 }
 
-function optionsCreateShape(event, ele) {
+function userCreateShape(event, ele) {
 
 }
 
-function optionsLineColor(event, ele) {
+function userLineColor(event, ele) {
   var canvas = getCanvas(ele.parentNode);
   canvas.userLineColor = ele.value;
   updFreeDraw(canvas);
 }
 
-function optionsLineWidth(event, ele) {
+function userLineWidth(event, ele) {
   var canvas = getCanvas(ele.parentNode);
   canvas.userLineWidth = ele.value;
   updFreeDraw(canvas);
 }
 
-function optionsFillColor(event, ele) {
+function userFillColor(event, ele) {
   getCanvas(ele.parentNode).userFillColor = ele.value;
 }
 
-function optionsMouse(event, ele) {
-  clearOptionsSelection(getCanvas(ele));
+function userBackgroundColor(event, ele) {
+  var canvas = getCanvas(ele.parentNode);
+  canvas.backgroundColor = ele.value;
+  canvas.renderAll();
+  this.panel.buildMessageAndSend('updateSettings', [this.panel.getIdentification()],
+                                {settings: {backgroundColor: ele.value}, to: canvas.canvasID});
 }
 
-function optionsPan(event, ele) {
+function userMouse(event, ele) {
+  clearUserSelection(getCanvas(ele));
+}
+
+function userPan(event, ele) {
   var canvas = getCanvas(ele);
-  clearOptionsSelection(canvas);
+  clearUserSelection(canvas);
   canvas.isPanningMode = true;
 }
 
-function optionsInsertImage(event, ele) {
+function userInsertImage(event, ele) {
   var canvas = getCanvas(ele);
   var url = prompt("Enter Image URL: ", "");
   if (url !== null && url !== "") {
@@ -194,12 +212,12 @@ function getCanvas(ele) {
   return ele.parentNode.parentNode.children[1].firstElementChild.firstElementChild.fabric;
 }
 
-function clearOptionsSelection(canvas) {
+function clearUserSelection(canvas) {
   canvas.isDrawingMode = false;
   canvas.isPanningMode = false;
 }
 
-function optionsDeleteSelected(event, ele) {
+function userDeleteSelected(event, ele) {
   var canvas = getCanvas(ele.parentNode);
   canvas.getActiveObjects().forEach( (obj) => {
     canvas.remove(obj);
@@ -216,6 +234,11 @@ function openSelectionMenu(objects) {
   console.log(objects);
   console.log(canvasArray['default']);
   objects[0].canvas.objectMenu.style.height = "100px";
+}
+
+function setUpdate(type, value, to) {
+  canvasArray[to][type] = value;
+  canvasArray[to].elementGroup.querySelector("input." + type).value = value;
 }
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -253,6 +276,7 @@ function initializeCanvas(settings) {
   c.id = settings.id;
   document.getElementById('canvasesContainer').appendChild(element);
   c.fabric = new fabric.Canvas(settings.id);
+  c.fabric.canvasID = settings.id;
 
   //!!!!!!!!!BEGIN OUTSIDE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //////Section taken from http://fabricjs.com/fabric-intro-part-5//////////////
@@ -299,11 +323,16 @@ function initializeCanvas(settings) {
   c.fabric.on("selection:cleared", function(e) { clearSelectionMenu(e) });
 
   c.fabric.brushes = initializeBrushes(c.fabric);
-  c.fabric.userLineColor = element.querySelector("input.optionsLineColor").value;
-  c.fabric.userFillColor = element.querySelector("input.optionsFillColor").value;
-  c.fabric.userLineWidth = element.querySelector("input.optionsLineWidth").value;
-  c.fabric.userBrush = c.fabric.brushes.pencil;
+
+  c.fabric.userLineColor = element.querySelector("input.userLineColor").value;
+  c.fabric.userFillColor = element.querySelector("input.userFillColor").value;
+  c.fabric.userLineWidth = element.querySelector("input.userLineWidth").value;
+  c.fabric.backgroundColor = element.querySelector("input.backgroundColor").value;
+
+  c.fabric.elementGroup = element;
   c.fabric.objectMenu = element.querySelector(".objectMenu");
+  c.fabric.userBrush = c.fabric.brushes.pencil;
+  c.fabric.renderAll();
 
   return c.fabric;
 }

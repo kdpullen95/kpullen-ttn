@@ -21,7 +21,9 @@
     </div>
     <div id="pageContainer">
       <div id="sheet"></div>
-      <div id="edit"></div>
+      <div id="edit">
+        <button onclick="saveChanges()">Save Changes</button>
+      </div>
       <div id="notes">
         <input type="text" id="searchNotes" placeholder="search..." oninput="runSearch()" />
         <textarea id="notesBox" onkeypress="chatEnterCheck(event, this)" placeholder="..." class="lightestAccentBG lightFontColor"></textarea>

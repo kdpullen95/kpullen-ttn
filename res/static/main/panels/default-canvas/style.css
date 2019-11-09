@@ -19,7 +19,7 @@ canvas {
   position: absolute;
   top: 15;
   left: 15;
-  background-color: rgba(112,128,144,0.25);
+  background-color: rgba(112,128,144,0.5);
 }
 
 .boxContainer {

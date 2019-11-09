@@ -1,1 +1,27 @@
 This is a SWN1e template.
+
+<div id="basicBox" class="groupBox">
+  <div id="name" class="edit"></div>
+  <div id="race" class="edit"></div>
+  <div id="class" class="edit"></div>
+  <div id="background" class="edit"></div>
+  <div id="alignment" class="edit"></div>
+  <div id="exP" class="edit"></div>
+</div>
+
+<div id="attributeBox" class="groupBox">
+  <div id="strength" class="edit attribute"></div>
+  <div id="strength-modifier" class="attribute-modifier"></div>
+  <div id="dexterity" class="edit attribute"></div>
+  <div id="dexterity-modifier" class="attribute-modifier"></div>
+  <div id="constitution" class="edit attribute"></div>
+  <div id="constitution-modifier" class="attribute-modifier"></div>
+  <div id="intelligence" class="edit attribute"></div>
+  <div id="intelligence-modifier" class="attribute-modifier"></div>
+  <div id="wisdom" class="edit attribute"></div>
+  <div id="wisdom-modifier" class="attribute-modifier"></div>
+  <div id="charisma" class="edit attribute"></div>
+  <div id="charisma-modifier" class="attribute-modifier"></div>
+</div>
+
+<button>Roll</button>
