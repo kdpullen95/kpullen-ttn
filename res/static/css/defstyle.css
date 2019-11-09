@@ -41,6 +41,10 @@
   width: 15px;
 }
 
+#gridSizeSelector {
+  width: 40px;
+}
+
 #alertLoginFailed {
   visibility: hidden;
   color: red;
@@ -93,7 +97,7 @@
   bottom: 0;
 }
 
-#overlay {
+#overlay, #underlay {
   position: fixed;
   display: none;
   width: 100%;
@@ -102,6 +106,14 @@
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+#underlay {
+  background-image: linear-gradient(to right, grey 1px, transparent 1px),
+                    linear-gradient(to bottom, grey 1px, transparent 1px);
+}
+
+#overlay {
   background-color: rgba(0,0,0,0);
-  z-index: 99999;
+  z-index: 999999;
 }

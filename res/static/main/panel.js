@@ -11,8 +11,11 @@ class Panel {
   documentOverlay(bool) {
     if (bool) {
       document.getElementById("overlay").style.display = "block";
+      if (getGridSize() !== 0)
+        document.getElementById("underlay").style.display = "block";
     } else {
       document.getElementById("overlay").style.display = "none";
+      document.getElementById("underlay").style.display = "none";
     }
   }
 
@@ -55,14 +58,14 @@ class Panel {
     };
   }
 
-  //TODO
   snapSize(value) {
-    return value;
+    if (getGridSize() == 0) return value;
+    return getGridSize() * Math.round(value/getGridSize());
   }
 
-  //TODO
   snapPos(value) {
-    return value;
+    if (getGridSize() == 0) return value;
+    return getGridSize() * Math.round(value/getGridSize());
   }
 
   deleteSignal() {

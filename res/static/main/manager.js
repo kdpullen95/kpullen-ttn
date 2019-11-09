@@ -4,6 +4,7 @@ var defaultIDNum = 1;
 var templateList;
 var user;
 var menuShow = true;
+var gridSize;
 
 socket.on('res', function (msg) {
   log(['received message: ', msg]);
@@ -25,6 +26,7 @@ function getURLVars() {
 function grabUserDataAndSync() {
   user = {name: getURLVars()['user'], k: getURLVars()['k']};
   synchronizationRequest();
+  gridSize = document.getElementById("gridSizeSelector").value;
 }
 
 function processMessage(msg) {
@@ -199,4 +201,17 @@ function hideShowMenu(element) {
 
 function getThemeURL() {
   return "../../../css/themes/" + document.getElementById("themeSelect").value;
+}
+
+function getGridSize() {
+  return gridSize;
+}
+
+function modifyGridSizeSelector(ev, element) {
+  setGridSize(element.value);
+}
+
+function setGridSize(num) {
+  gridSize = num;
+  document.getElementById("underlay").style.backgroundSize = gridSize + "px " + gridSize + "px";
 }

@@ -8,6 +8,7 @@
   <script src="manager.js"></script>
   <link rel="stylesheet" href="../css/defstyle.css" type="text/css"/>
   <link rel="stylesheet" type="text/css" id="themeCSS" />
+  <style id="gridCSS"></style>
   <template id="panelTemplate">
     <div class="panel lightAccentBG bordered">
       <div class="iconBar colorAccentBG bordered" onmousedown="startDrag(event, this)">
@@ -19,6 +20,7 @@
   </template>
 </head>
 <body onload="grabUserDataAndSync()" class="bodyStyle">
+  <div id="underlay"> </div>
   <div id="overlay"> </div>
   <div id="loadingOverlay" class="darkAccentBG">
     <div id="loadingBox" class="lightAccentBG">
@@ -31,7 +33,8 @@
       <button onclick="saveTemplate()">Save Template</button>
       <select id="templateSelect"></select>
       <button onclick="loadTemplate()">Load Template</button> | |
-      Theme: <select id="themeSelect" oninput="themeSelect(this)"></select>
+      Theme: <select id="themeSelect" oninput="themeSelect(this)"></select> | |
+      Snap-to-Grid: <input type="number" id="gridSizeSelector" value="0" min="0" step="20" onchange="modifyGridSizeSelector(event, this)" />
     </div>
   </div>
   <img id="hideShowMenu" class="icon" src="../icons/hideMenu.png" onmousedown="hideShowMenu(this)" />
