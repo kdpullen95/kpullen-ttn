@@ -6,15 +6,15 @@ var ObjectID = require('mongodb').ObjectID;
 //(((((((((((((((((((((((((((((((((((((())))))))))))))))))))))))))))))))))))))
 //((((((((((((((((((((RegEx Expressions (for parsing))))))))))))))))))))))))))
 var regex = {
-  brackets: /\[([^\[\]]+)\]/,             //finds interior brackets
-  parentheses: /\(([^\(\)]+)\)/,          //finds interior parentheses
-  add: /\d+(\[.+\])?\s*\+\s*\d+/,         //whitespace & brackets friendly add
-  divide: /\d+(\[.+\])?\s*\/\s*\d+/,                            //... divide
-  subtract: /\d+(\[.+\])?\s*-\s*\d+/,                           //... subtract
-  exponent: /\d+(\[.+\])?\s*\^\s*\d+/,                          //... exponent
-  multiply: /\d+(\[.+\])?\s*\*\s*\d+/,                          //... multiply
-  roll: /\d+(\[.+\])?d\d+(\[.+\])?/,      //rolls dice, #d# format, no space
-  convert: 0,                           //converts between imperial/metri TODOc
+  brackets:     /\[([^\[\]]+)\]/,                  //finds interior brackets
+  parentheses:  /\(([^\(\)]+)\)/,                  //finds interior parentheses
+  add:          /-?\d+(\[.+\])?\s*\+\s*-?\d+(\[.+\])?/,         //whitespace & brackets friendly add
+  divide:       /-?\d+(\[.+\])?\s*\/\s*-?\d+(\[.+\])?/,         //... divide
+  subtract:     /-?\d+(\[.+\])?\s*-\s*-?\d+(\[.+\])?/,          //... subtract
+  exponent:     /-?\d+(\[.+\])?\s*\^\s*-?\d+(\[.+\])?/,         //... exponent
+  multiply:     /-?\d+(\[.+\])?\s*\*\s*-?\d+(\[.+\])?/,         //... multiply
+  roll:         /-?\d+(\[.+\])?d-?\d+(\[.+\])?/,      //rolls dice, #d# format, no space
+  convert: 0,                           //converts between imperial/metric TODO
 }
 
 
@@ -87,9 +87,7 @@ function recParentheses(str) {
   while ((find = findRegEx(regex.parentheses,str)) !== null) {
     str = find.first + recParentheses(find.matchTrimmed) + find.last;
   }
-  return '[' + str + ']';
   return rSearch(str);
-  return asSearch(mdSearch(eSearch(rSearch(str))));
 }
 
 //format 45[something] denotes num answer first, steps that got there second
@@ -97,31 +95,34 @@ function recParentheses(str) {
 //roll - exponent - (multiply - divide) - (add - subtract)
 function rSearch(str) {
   var find;
-  var il = 0;
-  while((find = findRegEx(regex.roll, str)) !== null && il < 10) {
+  while((find = findRegEx(regex.roll, str)) !== null) {
     var nums = find.match.split("d");
+    nums[0] = parseInt(nums[0], 10);
+    nums[1] = parseInt(nums[1], 10);
     var rollStr = '';
     var total = 0;
-    for (var i = 0; i < nums.length; i++) {
-      nums[i] = parseInt(nums[i], 10);
-    }
     for (var i = 0; i < nums[0]; i++) {
-      var n = Math.floor(Math.random() * nums[1]);
+      var n = Math.floor(Math.random() * nums[1]) + 1;
       total += n;
       rollStr += n + " ";
     }
     str = find.first;
-    str += total + '[R ' + rollStr + '[' + find.match + ']]'
+    //str += total + '[R ' + rollStr + ']';
+    str += total + '[R ' + rollStr + '[' + find.match.replace(/d/g, "r") + ']]'
     str += find.last;
-    il++;
   }
-  return str;
+  return eSearch(str);
 }
 
 function eSearch(str) {
   var find;
   while((find = findRegEx(regex.exponent, str)) !== null) {
-
+    var nums = find.match.split("^");
+    nums[0] = parseInt(nums[0], 10);
+    nums[1] = parseInt(nums[1], 10);
+    str = find.first;
+    str += Math.pow(nums[0], nums[1]) + '[' + find.match.replace(/\^/g, "e") + ']';
+    str += find.last;
   }
   return str;
 }
