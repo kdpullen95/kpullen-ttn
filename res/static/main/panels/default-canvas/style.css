@@ -9,6 +9,11 @@ canvas {
   z-index: 1;
 }
 
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
 .interiorPanel {
   overflow: hidden;
 }

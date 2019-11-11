@@ -6,7 +6,7 @@ var prefix;
 var collection;
 
 module.exports = {
-  name: "Launch Panel", //human readable name
+  name: "UNNAMED PANEL", //human readable name
 
   init: function(parent, folderName, mongoCollection) {
     func = parent; //access shared functions, like "log", and values like panelsList
@@ -25,16 +25,16 @@ module.exports = {
       //do things here or add new cases as needed
       default:
     }
-    return message;
+    return [{message: message, emitType: 'sender'}];
   },
 
   getSizeValues: function(id) { //no database data means always default size
     //if database check, put it here and update size values accordingly
-    return {width: INT, height: INT, top: INT, left: INT}; //int pixels
+    return {width: 200, height: 200, top: 200, left: 200}; //int pixels
   },
 
   assignID: function() {
-    return id; //literally whatever, as long as it's not so long it starts causing issues
+    return Math.random() * 1000; //literally whatever, as long as it's not so long it starts causing issues
     //recommend, if using database, using mongodb's ObjectID().toHexString (see default-chat & default-canvas)
   },
 

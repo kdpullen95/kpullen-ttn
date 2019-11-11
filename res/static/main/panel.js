@@ -60,7 +60,8 @@ class Panel {
 
   snapSize(value) {
     if (getGridSize() == 0) return value;
-    return getGridSize() * Math.round(value/getGridSize());
+    var num = getGridSize() * Math.round(value/getGridSize());
+    return num == 0 ? getGridSize() : num;
   }
 
   snapPos(value) {

@@ -6,15 +6,13 @@ var ObjectID = require('mongodb').ObjectID;
 //(((((((((((((((((((((((((((((((((((((())))))))))))))))))))))))))))))))))))))
 //((((((((((((((((((((RegEx Expressions (for parsing))))))))))))))))))))))))))
 var regex = {
-  brackets:     /\[([^\[\]]+)\]/,                  //finds interior brackets
-  parentheses:  /\(([^\(\)]+)\)/,                  //finds interior parentheses
-  add:          /-?\d+(\[.+\])?\s*\+\s*-?\d+(\[.+\])?/,         //whitespace & brackets friendly add
-  divide:       /-?\d+(\[.+\])?\s*\/\s*-?\d+(\[.+\])?/,         //... divide
-  subtract:     /-?\d+(\[.+\])?\s*-\s*-?\d+(\[.+\])?/,          //... subtract
-  exponent:     /-?\d+(\[.+\])?\s*\^\s*-?\d+(\[.+\])?/,         //... exponent
-  multiply:     /-?\d+(\[.+\])?\s*\*\s*-?\d+(\[.+\])?/,         //... multiply
-  roll:         /-?\d+(\[.+\])?d-?\d+(\[.+\])?/,      //rolls dice, #d# format, no space
-  convert: 0,                           //converts between imperial/metric TODO
+  brackets:       /\[([^\[\]]+)\]/,                  //finds interior brackets
+  parentheses:    /\(([^\(\)]+)\)/,                  //finds interior parentheses
+  addSubtract:    /-?\d+(\[.+\])?\s*(\+|-)\s*-?\d+(\[.+\])?/,     //whitespace & brackets friendly add & subtract
+  multiplyDivide: /-?\d+(\[.+\])?\s*(\*|\/)\s*-?\d+(\[.+\])?/,    //... multiply & divide
+  exponent:       /-?\d+(\[.+\])?\s*\^\s*-?\d+(\[.+\])?/,         //... exponent
+  roll:           /-?\d+(\[.+\])?d-?\d+(\[.+\])?/,                //rolls dice, #d# format, no space
+  convert:        0,                           //converts between imperial/metric TODO
 }
 
 
@@ -87,18 +85,19 @@ function recParentheses(str) {
   while ((find = findRegEx(regex.parentheses,str)) !== null) {
     str = find.first + recParentheses(find.matchTrimmed) + find.last;
   }
-  return rSearch(str);
+  return mathSearch(str);
 }
 
+//TODO - do this better by either figuring out how to ignore things within brackets, or...
+//TODO parseInt is not picking up numbers that also have brackets in the string, like 25[5*5]. Substring at first bracket?
 //format 45[something] denotes num answer first, steps that got there second
 //PREMDAS
 //roll - exponent - (multiply - divide) - (add - subtract)
-function rSearch(str) {
+function mathSearch(str) {
   var find;
+  //////////////////////ROLL////////////////////////////////////////////////////
   while((find = findRegEx(regex.roll, str)) !== null) {
-    var nums = find.match.split("d");
-    nums[0] = parseInt(nums[0], 10);
-    nums[1] = parseInt(nums[1], 10);
+    var nums = numberify(find.match.split("d"));
     var rollStr = '';
     var total = 0;
     for (var i = 0; i < nums[0]; i++) {
@@ -108,39 +107,57 @@ function rSearch(str) {
     }
     str = find.first;
     //str += total + '[R ' + rollStr + ']';
-    str += total + '[R ' + rollStr + '[' + find.match.replace(/d/g, "r") + ']]'
+    str += total + '[R ' + rollStr + '[' + find.match.replace(/d/, "$r$") + ']]'
     str += find.last;
   }
-  return eSearch(str);
-}
 
-function eSearch(str) {
-  var find;
+  //////////////////EXPONENT////////////////////////////////////////////////////
   while((find = findRegEx(regex.exponent, str)) !== null) {
-    var nums = find.match.split("^");
-    nums[0] = parseInt(nums[0], 10);
-    nums[1] = parseInt(nums[1], 10);
+    var nums = numberify(find.match.split("^"));
     str = find.first;
-    str += Math.pow(nums[0], nums[1]) + '[' + find.match.replace(/\^/g, "e") + ']';
+    str += Math.pow(nums[0], nums[1]) + '[' + find.match.replace(/\^/, "$e$") + ']';
+    str += find.last;
+  }
+
+  ///////////////MULTIPLY/DIVIDE////////////////////////////////////////////////
+  while((find = findRegEx(regex.multiplyDivide, str)) !== null) {
+    str = find.first;
+    if (find.match.indexOf("*") > find.match.indexOf("/")) {
+      var nums = numberify(find.match.split("*"));
+      str += (nums[0]*nums[1]) + '[' + find.match.replace(/\*/, "$m$") + ']';
+    } else {
+      var nums = numberify(find.match.split("/"));
+      str += (nums[0]/nums[1]) + '[' + find.match.replace(/\//, "$d$") + ']';
+    }
     str += find.last;
   }
   return str;
-}
 
-function mdSearch(str) {
-  var find;
-  while((find = findRegEx(regex.multiplyDivide, str)) !== null) {
-
-  }
-  return str;
-}
-
-function asSearch(str) {
-  var find;
+  //TODO this needs more attention since - can be negative (beginning)
+  //TODO currently creates infinite loop
+  ///////////////ADD/SUBTRACT///////////////////////////////////////////////////
   while((find = findRegEx(regex.addSubtract, str)) !== null) {
-
+    str = find.first;
+    var indexSubtract = find.match.indexOf("-", 1);
+    var indexAdd = find.match.indexOf("+");
+    if (indexAdd > 0 && indexAdd < indexSubtract) {
+      var nums = numberify(find.match.split("+"));
+      str += (nums[0] - (0 - nums[1])) + '[' + find.match.replace(/\+/, "$a$") + ']';
+    } else {
+      var nums = numberify(find.match.split("-"));
+      str += (nums[0] - nums[1]) + '[' + find.match.replace(/-/, "$s$") + ']';
+    }
+    str += find.last;
   }
+
   return str;
+}
+
+function numberify(nums) {
+  nums.forEach( (num) => {
+    num = parseInt(num, 10);
+  });
+  return nums;
 }
 
 // splits the str nicely when given regex
