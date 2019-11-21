@@ -37,14 +37,14 @@ canvas {
   top: 0;
   left: 22px;
   width: 18px;
-  height: 18px;
+  height: 16px;
 }
 
 .numBox {
   position: absolute;
   top: 0;
-  left: 16px;
-  width: 32px;
+  left: 22px;
+  width: 35px;
   height: 18px;
 }
 

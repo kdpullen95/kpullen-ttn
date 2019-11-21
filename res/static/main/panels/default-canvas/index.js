@@ -225,6 +225,17 @@ function userDeleteSelected(event, ele) {
   //clear active objects/selection here todo
 }
 
+function userDuplicateSelected(event, ele) {
+  var canvas = getCanvas(ele.parentNode);
+  canvas.getActiveObjects().forEach( (obj) => {
+    obj.clone( (clone) => {
+      clone.id = generateObjectID();
+      clone.set({ left: obj.left + 10, top: obj.top + 10});
+      canvas.add(clone);
+    });
+  });
+}
+
 function clearSelectionMenu(ev) {
   ev = ev.deselected ? ev.deselected[0] : ev.target;
   ev.canvas.objectMenu.style.height = "0px";

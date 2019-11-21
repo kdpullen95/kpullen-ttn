@@ -1,34 +1,50 @@
 var panel;
 
-//required functions:
-//
 function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
-  //begin optional (if you don't plan to sync with themes, can remove)
   setTheme(themeURL);
-  //end optional
   this.panel.buildMessageAndSend('init');
 }
 
 function passMessageOn(message) {
   switch(message.action) {
-    case 'affirm':
-      //do things
     case 'init':
-      //insert other cases here as needed
+    case 'sync':
+      populateUsers(message.content.users);
+      break;
+    case 'createUser':
+    case 'deleteUser':
+      if (message.affirm)
+        this.panel.buildMessageAndSend('sync');
     default:
   }
 }
-//end required functions
 
-
-//optional functions beyond this point
-function alertPanelChange() {
-  //fires when the panel has been resized, may fire for more
-  //related situations in the future (such as when the panel is moved in general)
-}
+function alertPanelChange() {}
 
 function setTheme(url) {
   document.getElementById("themeCSS").href = url;
+}
+
+function promptAddUser() {
+  var name = prompt("User name: ", "");
+  if (name !== null && name !== "") {
+    this.panel.buildMessageAndSend('createUser', [this.panel.getIdentification()], {user: name});
+  }
+}
+
+function populateUsers(users) {
+  if (typeof users !== 'undefined') {
+    var div = document.getElementById("userManagement");
+    div.removeChild(document.getElementById("userBox"));
+    var userBox = document.createElement("DIV");
+    userBox.id = "userBox";
+    div.appendChild(userBox);
+    users.forEach( (user) => {
+      var userDiv = document.createElement("DIV");
+      userDiv.appendChild(document.createTextNode(user._id + " " + user.pin));
+      userBox.appendChild(userDiv);
+    });
+  }
 }

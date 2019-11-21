@@ -97,7 +97,7 @@ function mathSearch(str) {
   var find;
   //////////////////////ROLL////////////////////////////////////////////////////
   while((find = findRegEx(regex.roll, str)) !== null) {
-    var nums = numberify(find.match.split("d"));
+    var nums = extractNums(find.match.split("d"));
     var rollStr = '';
     var total = 0;
     for (var i = 0; i < nums[0]; i++) {
@@ -113,7 +113,7 @@ function mathSearch(str) {
 
   //////////////////EXPONENT////////////////////////////////////////////////////
   while((find = findRegEx(regex.exponent, str)) !== null) {
-    var nums = numberify(find.match.split("^"));
+    var nums = extractNums(find.match.split("^"));
     str = find.first;
     str += Math.pow(nums[0], nums[1]) + '[' + find.match.replace(/\^/, "$e$") + ']';
     str += find.last;
@@ -123,40 +123,43 @@ function mathSearch(str) {
   while((find = findRegEx(regex.multiplyDivide, str)) !== null) {
     str = find.first;
     if (find.match.indexOf("*") > find.match.indexOf("/")) {
-      var nums = numberify(find.match.split("*"));
+      var nums = extractNums(find.match.split("*"));
       str += (nums[0]*nums[1]) + '[' + find.match.replace(/\*/, "$m$") + ']';
     } else {
-      var nums = numberify(find.match.split("/"));
+      var nums = extractNums(find.match.split("/"));
       str += (nums[0]/nums[1]) + '[' + find.match.replace(/\//, "$d$") + ']';
     }
     str += find.last;
   }
   return str;
-
   //TODO this needs more attention since - can be negative (beginning)
-  //TODO currently creates infinite loop
+  //TODO i n f i n i t e l o o p
   ///////////////ADD/SUBTRACT///////////////////////////////////////////////////
-  while((find = findRegEx(regex.addSubtract, str)) !== null) {
+  var li = 0;
+  while((find = findRegEx(regex.addSubtract, str)) !== null && li < 5) {
     str = find.first;
     var indexSubtract = find.match.indexOf("-", 1);
     var indexAdd = find.match.indexOf("+");
     if (indexAdd > 0 && indexAdd < indexSubtract) {
-      var nums = numberify(find.match.split("+"));
-      str += (nums[0] - (0 - nums[1])) + '[' + find.match.replace(/\+/, "$a$") + ']';
+      var nums = extractNums(find.match.split("+"));
+      str += (nums[0] + nums[1]) + '[' + find.match.replace(/\+/, "$a$") + ']';
     } else {
-      var nums = numberify(find.match.split("-"));
+      var nums = extractNums(find.match.split("-"));
       str += (nums[0] - nums[1]) + '[' + find.match.replace(/-/, "$s$") + ']';
     }
     str += find.last;
+    li++;
   }
 
   return str;
 }
 
-function numberify(nums) {
-  nums.forEach( (num) => {
-    num = parseInt(num, 10);
-  });
+function extractNums(nums) {
+  console.log(nums);
+  for (var i = 0; i < nums.length; i++) {
+    nums[i] = parseInt(nums[i], 10);
+  }
+  console.log(nums);
   return nums;
 }
 

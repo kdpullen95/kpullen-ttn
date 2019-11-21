@@ -65,24 +65,31 @@ module.exports = {
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&MONGO&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-  //types v - view, e - edit, c - control
+  //types 1-10 view, 11-20 edit, 21+ control
   //TODO access user collection and checks to see if they have that permission or not, boolean return
   //permissioncodes are in the format of 'type-identifier', where the type is the type of permission
   //and identifier is the subtype, so permission to see things flagged as 'foo' in the database would
   //be chceked via checkPermission(userName, 'resourcePanel-flag:foo') or similar. Permissions can only
-  //be set by someone with checkPermission(user, permissionCode) === 'c' for a specific code OR by an active
-  //panel/server element. Pass "this" as authUser if panel server.js file, those get instant 'c' permissions.
+  //be set by someone with checkPermission(user, permissionCode) > 20 for a specific code OR by an active
+  //panel/server element. Pass "this" as authUser if panel server.js file, those get instant 21 permissions.
+  //numerical values so that you can test for view OR ABOVE without trouble
+  //numerical values are spread out so that granular permissiosn control can be implemeneted
 
-  getPermissionType: async function (user, permissionCode, type) {
+  getPermissionType: async function (user, permissionCode) {
+    this.log(this.prefix.function, ["User ", user," requesting permissions ", permissionCode])
     var field = {};
     field[user] = 1;
+    if (isAdmin(user)) {
+      this.log(this.prefix.function, ["Admin permissions request accepted for user ", user]);
+      return 50; //a user with admin permissions has control over all permissions, including ones that don't exist yet
+    }
     return await permissionCollection.findOne(  {'code': permissionCode },
                                                 field,
                                                 () => {} );
   },
 
   setPermission: async function (authUser, user, permissionCode, to) {
-    if (activeElement(authUser) || await this.getPermissionType(authUser, permissionCode) === 'c') {
+    if (activeElement(authUser) || await this.getPermissionType(authUser, permissionCode) > 10 ) {
       var field = {};
       field[user] = to;
       permissionCollection.updateOne( {'code': permissionCode},
@@ -94,15 +101,13 @@ module.exports = {
     }
   },
 
-  authUser: function(user, pin) {
-    //BIG TODO (eventually the hashed (+salted?) passwords will be stored in a database)
-    if (user === "test01" && pin === "test01") {
+  authUser: async function(user, pin) {
+    //BIG TODO (actual security not plaintext pins)
+    if (user === "admin" && pin === "admin") {
       return true;
     }
-    if (user === "test02" && pin === "test02") {
-      return true;
-    }
-    return false;
+    var spin = await userCollection.findOne({'_id': user});
+    return typeof spin !== 'undefined' && pin === spin.pin;
   },
 
   assignValues: function(message) {
@@ -241,6 +246,10 @@ function closeDB() {
     _this.log(_this.prefix.mongo, ["(EXIT) closing open database: ", databaseName]);
     mongoDB.close();
   }
+}
+
+function isAdmin(user) {
+  return user === "admin"; //todo come back and make this respond to any username
 }
 
 //iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii

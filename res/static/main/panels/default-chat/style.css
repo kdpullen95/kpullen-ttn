@@ -13,3 +13,8 @@
 #chat {
   margin: 5px;
 }
+
+.pop {
+  pointer-events: none;
+  margin: 10px;
+}

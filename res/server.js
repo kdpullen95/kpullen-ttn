@@ -56,7 +56,7 @@ async function initialize() {
 }
 //end INITIALIZATION
 
-function runServer() {
+async function runServer() {
   //socket function
   io.on('connection', function(socket) {
     func.log(func.prefix.socket, ['user connected']);
@@ -89,10 +89,10 @@ function runServer() {
 
   app.use(express.static(statloc));
 
-  app.post('',function(req, res) {
+  app.post('', async function(req, res) {
     //TODO client side + server side hashing with option of SSL instead if provided cert
     //TODO security is hard
-    if (func.authUser(req.body.user, req.body.pin)) {
+    if (await func.authUser(req.body.user, req.body.pin)) {
       addUserKey(req.body.user);
       res.json({user: req.body.user, k: activeUsers[req.body.user].k});
     } else {
