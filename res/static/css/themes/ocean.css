@@ -42,3 +42,7 @@ button, select, input, textarea {
 .linkFontColor {
   color: midnightblue;
 }
+
+.warningFontColor {
+  color: #cc0000;
+}

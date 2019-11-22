@@ -1,4 +1,4 @@
-var panel;
+const userSliceTemplate = '<img class="icon userDeleteIcon" src="icons/delete.png" onmouseup="promptDeleteUser(event, this)" data-user="$user$"/> $user$ $pin$';
 
 function init(panel, themeURL) {
   this.panel = panel;
@@ -34,17 +34,35 @@ function promptAddUser() {
   }
 }
 
+function promptDeleteUser(ev, ele) {
+  var name = prompt("Enter user's name to confirm.", "");
+  if (name === ele.dataset.user) {
+    this.panel.buildMessageAndSend('deleteUser', [this.panel.getIdentification()], {user: ele.dataset.user});
+  }
+}
+
 function populateUsers(users) {
-  if (typeof users !== 'undefined') {
-    var div = document.getElementById("userManagement");
-    div.removeChild(document.getElementById("userBox"));
-    var userBox = document.createElement("DIV");
-    userBox.id = "userBox";
-    div.appendChild(userBox);
+  var div = document.getElementById("userManagement");
+  div.removeChild(document.getElementById("userBox"));
+  var userBox = document.createElement("DIV");
+  userBox.id = "userBox";
+  div.appendChild(userBox);
+  if (Array.isArray(users)) {
+    document.getElementById("addUserIcon").style.display = "block";
     users.forEach( (user) => {
       var userDiv = document.createElement("DIV");
-      userDiv.appendChild(document.createTextNode(user._id + " " + user.pin));
+      userDiv.innerHTML = userSliceTemplate.replace(/\$user\$/g, user._id).replace("$pin$", user.pin);
       userBox.appendChild(userDiv);
     });
+  } else {
+    document.getElementById("addUserIcon").style.display = "none";
+    userBox.appendChild(denialDiv());
   }
+}
+
+function denialDiv() {
+  var denDiv = document.createElement("DIV");
+  denDiv.appendChild(document.createTextNode("Insufficient Permissions"));
+  denDiv.classList.add("warningFontColor");
+  return denDiv;
 }

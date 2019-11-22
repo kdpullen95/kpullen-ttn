@@ -1,6 +1,3 @@
-var panel;
-var databasePanels;
-
 function init(panel, themeURL) {
   this.panel = panel;
   this.panel.assignChild(this);
@@ -13,7 +10,7 @@ function passMessageOn(msg) {
   switch(msg.action) {
     case 'init':
       populatePanels(msg.content.panels);
-      databasePanels = msg.content.databasePanels;
+      this.databasePanels = msg.content.databasePanels;
       updateOptions();
   }
 }
@@ -31,11 +28,10 @@ function populatePanels(panels) {
 function updateOptions() {
   var loadWhich = document.getElementById('loadWhich');
   var currentSelection = document.getElementById('panelSelect').value;
-  while (loadWhich.firstChild) {
+  while (loadWhich.firstChild) { //could just remove loadWhich and make it again
     loadWhich.removeChild(loadWhich.firstChild);
   }
-  loadWhich.appendChild(buildCheckDOM("New Panel", "newPanel"));
-  databasePanels[currentSelection].forEach( (pair) => {
+  this.databasePanels[currentSelection].forEach( (pair) => {
     loadWhich.appendChild(buildCheckDOM(pair[0], pair[1]));
   });
 }
@@ -44,6 +40,7 @@ function buildCheckDOM(label, value) {
   var check = document.createElement("INPUT");
   check.setAttribute("type", "checkbox");
   check.setAttribute("value", value);
+  check.setAttribute("onclick", "updateButtonText()");
   var div = document.createElement("DIV");
   div.appendChild(check); //todo label=
   div.appendChild(document.createTextNode(label));
@@ -56,16 +53,33 @@ function runSearch() {
 
 function submitSelection() {
   var inputs = document.getElementsByTagName('input');
+  var inputsChecked = 0;
   for (var i = 0; i < inputs.length; i++) {
     if (inputs[i].checked) {
-      if (inputs[i].value === 'newPanel') {
-        this.panel.createNew(document.getElementById('panelSelect').value);
-      } else {
-        this.panel.loadPanel(document.getElementById('panelSelect').value, inputs[i].value);
-      }
+      inputsChecked++;
+      this.panel.loadPanel(document.getElementById('panelSelect').value, inputs[i].value);
     }
   }
+  if (inputsChecked === 0) {
+    this.panel.createNew(document.getElementById('panelSelect').value);
+  }
   this.panel.delete();
+}
+
+function updateButtonText() {
+  var inputs = document.getElementsByTagName('input');
+  var button = document.getElementById("submitButton");
+  var inputsChecked = 0;
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].checked) {
+      inputsChecked++;
+    }
+  }
+  if (inputsChecked === 0) {
+    button.innerText = "Create New";
+  } else {
+    button.innerText = "Load Selection(s)";
+  }
 }
 
 function setTheme(url) {

@@ -65,3 +65,7 @@ label {
 .linkFontColor {
   color: skyblue;
 }
+
+.warningFontColor {
+  color: #ff3333;
+}

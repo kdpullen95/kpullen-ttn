@@ -43,3 +43,7 @@ button, select, input, textarea {
 .linkFontColor {
   color: skyblue;
 }
+
+.warningFontColor {
+  color: #ff3333;
+}

@@ -1,0 +1,10 @@
+.userDeleteIcon {
+  height: 15px;
+  width: 15px;
+}
+
+#addUserIcon {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}

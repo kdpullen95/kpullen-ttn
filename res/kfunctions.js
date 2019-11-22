@@ -76,23 +76,36 @@ module.exports = {
   //numerical values are spread out so that granular permissiosn control can be implemeneted
 
   getPermissionType: async function (user, permissionCode) {
-    this.log(this.prefix.function, ["User ", user," requesting permissions ", permissionCode])
-    var field = {};
-    field[user] = 1;
+    this.log(this.prefix.function, ["User ", user," requesting permissions, code: ", permissionCode])
     if (isAdmin(user)) {
       this.log(this.prefix.function, ["Admin permissions request accepted for user ", user]);
       return 50; //a user with admin permissions has control over all permissions, including ones that don't exist yet
     }
-    return await permissionCollection.findOne(  {'code': permissionCode },
-                                                field,
+    var field = {};
+    field[user] = 1;
+    var indiv = await permissionCollection.findOne(  {'_id': permissionCode },
+                                                      field,
+                                                      () => {} );
+    if (typeof indiv !== 'undefined') return indiv;
+    return await permissionCollection.findOne(  {'_id': permissionCode},
+                                                {'s:default': 1},
                                                 () => {} );
   },
 
+  /**
+   * Sets a permission code to given value, rejects if authUser does not have
+   * permission to set that code. By convention, values are:
+   * 1-10 view, 11-20 edit, 21+ control
+   * @param  {String} authUser       String username OR self for modules
+   * @param  {String} user           Target user for set permission, s:default for default
+   * @param  {String} permissionCode permission code to set. upsert if doesn't exist
+   * @param  {Integer} to             value to set the permission code to
+   */
   setPermission: async function (authUser, user, permissionCode, to) {
     if (activeElement(authUser) || await this.getPermissionType(authUser, permissionCode) > 10 ) {
       var field = {};
       field[user] = to;
-      permissionCollection.updateOne( {'code': permissionCode},
+      permissionCollection.updateOne( {'_id': permissionCode},
                                       field,
                                       {upsert: true},
                                       () => {} );
@@ -101,15 +114,28 @@ module.exports = {
     }
   },
 
+  /**
+   * Returns true if user matches database or admin login
+   * @param  {String} user
+   * @param  {String} pin
+   * @return {Boolean}
+   */
   authUser: async function(user, pin) {
-    //BIG TODO (actual security not plaintext pins)
-    if (user === "admin" && pin === "admin") {
-      return true;
+    try {
+      //BIG TODO (actual security not plaintext pins)
+      if (user === "s:admin" && pin === "admin") {
+        return true; //todo feature to assign an account admin and just work from there
+      }
+      return pin === (await userCollection.findOne({'_id': user})).pin;
+    } catch (e) {
+      //todo add in a check that stops this from being called when users just don't exist?
+      this.log(this.prefix.function, [user, " userAuth encountered error when verifying with ", pin, ". user might not exist. error->"]);
+      this.error(e);
+      return false;
     }
-    var spin = await userCollection.findOne({'_id': user});
-    return typeof spin !== 'undefined' && pin === spin.pin;
   },
 
+  //todo can this be moved out of exports?
   assignValues: function(message) {
     message.content = { id: message.from.id.toString().startsWith('DEFAULTID') ? this.assignID(message.from.type) : message.from.id,
                         type: message.from.type };
@@ -117,29 +143,51 @@ module.exports = {
     return message;
   },
 
+  /**
+   * Queries panel server module for ID usable for panel
+   * @param  {String} type panel type name
+   * @return {String}   may be of non-string type if module implements
+   */
   assignID: function(type) {
     return modFunctions[type].assignID();
   },
 
+  /**
+   * Queries panel server module and returns what size a new or loaded panel should
+   * be instantiated with.
+   * @param  {String} type panel type name
+   * @param  {String} id   panel id string
+   * @return {Object}      {width: int, height: int, top: int, left: int}
+   */
   getSizeValues: function(type, id) {
     return modFunctions[type].getSizeValues(id);
   },
 
+  /**
+   * Returns a list of saved panels for the specified message, for every type of
+   * panel (iterates through panelsList)
+   * @param  {Object} message message prompting the loading of panels
+   * @return {Object} (key, value) = (panelName, array of saved Panels). Arrays
+   *                                                            can be empty
+   */
   getSavedPanels: async function(message) {
     var co = {};
     var keyArray = Object.keys(this.panelsList);
     for (var i = 0; i < keyArray.length; i++) {
       co[keyArray[i]] = await modFunctions[keyArray[i]].getSavedPanels(message);
     }
-    // Object.keys(this.panelsList).forEach(function (key) {
-    //   co[key] = await modFunctions[key].getSavedPanels();
-    // });    //is there a way to easily await all of these?
     return co;
   },
 
   //============================================================================
   //============================================================================
   //========================DEBUG & HELPER METHODS==============================
+
+  /**
+   * Shallow clones the provided object using object.assign
+   * @param  {Object} obj Object to clone
+   * @return {Object}     Cloned object
+   */
   shallowClone: function(obj) {
     return Object.assign({}, obj);
   },
@@ -152,6 +200,12 @@ module.exports = {
     verbose = v;
   },
 
+  /**
+   * Prints to console with expanded objects via JSON.stringify and time/date
+   * @param  {String}  prefix       string to use as prefix, see this.prefix
+   * @param  {Array}  strArray      array of strings and objects to expand, concat, and print
+   * @param  {Boolean} [force=false] forces output even if verbose is false
+   */
   log: function(prefix, strArray, force=false) {
     if (!verbose && !force) return;
     str = '';
@@ -160,7 +214,12 @@ module.exports = {
     }
     console.log(dateline(prefix) + str);
   },
-
+  /**
+   * Prints error and stacktrace.
+   * @param  {Object}  error        error object
+   * @param  {Boolean} [stack=true] whether to print stack trace or not
+   * @param  {Boolean} [exit=false] whether to exit or not (not working currently todo)
+   */
   error: function(error, stack=true, exit=false) {
     var err = [error.message];
     if (stack) err.push(error.stack);
@@ -199,6 +258,9 @@ async function initPanels(panelList) {
       compatEval(mod); //evaluates mod to ensure it has expected functions & files
       mod.init(_this, panelList[i], await mongoDB.collection(panelList[i]));
       _this.log(_this.prefix.function, [panelList[i], " successfully initialized."], true);
+      if (typeof mod.getDefaultPermissions === 'function') {
+        insertDefaultPermissions(mod.getDefaultPermissions());
+      }
       modFunctions[panelList[i]] = mod; //separation allows modFunctions to still work
                                           //on the rest of them even if try/catch is called
       _this.panelsList[panelList[i]] = mod.name;
@@ -207,6 +269,14 @@ async function initPanels(panelList) {
       _this.error(e, true);
     }
   }
+}
+
+function insertDefaultPermissions(permissions) {
+  permissions.forEach( (permission) => {
+    permissionCollection.updateOne( {'_id': permission.code },
+                                    { $setOnInsert: { 's:default': permission.value } },
+                                    { upsert: true } );
+  });
 }
 
 function compatEval(mod) {
@@ -249,7 +319,7 @@ function closeDB() {
 }
 
 function isAdmin(user) {
-  return user === "admin"; //todo come back and make this respond to any username
+  return user === "s:admin"; //todo come back and make this respond to any username
 }
 
 //iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
