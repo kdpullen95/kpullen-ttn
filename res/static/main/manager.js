@@ -1,10 +1,8 @@
 var panelObj = {};
 var socket = io();
 var defaultIDNum = 1;
-var templateList;
-var user;
 var menuShow = true;
-var gridSize;
+var gridSize, overlay, underlay, gridVisibilitySelector, user, templateList;
 
 socket.on('res', function (msg) {
   log(['received message: ', msg]);
@@ -25,6 +23,9 @@ function getURLVars() {
 
 function grabUserDataAndSync() {
   user = {name: getURLVars()['user'], k: getURLVars()['k']};
+  overlay = document.getElementById("overlay");
+  underlay = document.getElementById("underlay");
+  gridVisibilitySelector = document.getElementById("gridVisibilitySelector");
   synchronizationRequest();
   gridSize = document.getElementById("gridSizeSelector").value;
 }
@@ -211,7 +212,36 @@ function modifyGridSizeSelector(ev, element) {
   setGridSize(element.value);
 }
 
+function documentOverlay(bool) {
+  if (bool) {
+    overlay.style.display = "block";
+    if (gridSize !== 0 && !checkGridVisibility("never"))
+      underlay.style.display = "block";
+  } else {
+    overlay.style.display = "none";
+    if (!checkGridVisibility("always"))
+      underlay.style.display = "none";
+  }
+}
+
+function checkGridVisibility(str) {
+  return str === gridVisibilitySelector.value;
+}
+
+function modifyGridVisibilitySelector() {
+  if (checkGridVisibility("always") && gridSize > 0) {
+    underlay.style.display = "block";
+  } else {
+    underlay.style.display = "none";
+  }
+}
+
 function setGridSize(num) {
+  if (num < 1) {
+    underlay.style.display = "none";
+  } else if (checkGridVisibility("always")) {
+    underlay.style.display = "block"
+  }
   gridSize = num;
   document.getElementById("underlay").style.backgroundSize = gridSize + "px " + gridSize + "px";
 }

@@ -6,31 +6,18 @@ class Panel {
     this.iden.id = id;
   }
 
-  //temporarily prevents iframes from messing with dragging/resizing
-  //small todo - better way?
-  documentOverlay(bool) {
-    if (bool) {
-      document.getElementById("overlay").style.display = "block";
-      if (getGridSize() !== 0)
-        document.getElementById("underlay").style.display = "block";
-    } else {
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("underlay").style.display = "none";
-    }
-  }
-
   //todo fix repetitiveness. Is there a way to combine these that doesn't make things worse?
   //todo is setting them directly via .onmousewhatever good practice? find out, fix
   //todo don't alert on tiny moves or stray clicks
   resizing(clickLeft, clickTop) {
     log(["start resize drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
-    this.documentOverlay(true);
+    documentOverlay(true);
     document.onmouseup = () => {
       log(["end resize drag on panel: ", this]);
       document.onmouseup = null;
       document.onmousemove = null;
       this.alertResize();
-      this.documentOverlay(false);
+      documentOverlay(false);
     };
     document.onmousemove = (event) => {
       var height = event.clientY - this.getTop();
@@ -43,13 +30,13 @@ class Panel {
     log(["start relocation drag from " + clickLeft + ", " + clickTop + " for panel: ", this]);
     var offsetTop = this.getTop() - clickTop;
     var offsetLeft = this.getLeft() - clickLeft;
-    this.documentOverlay(true);
+    documentOverlay(true);
     document.onmouseup = () => {
       log(["end relocation drag on panel: ", this]);
       document.onmouseup = null;
       document.onmousemove = null;
       this.alertMove();
-      this.documentOverlay(false);
+      documentOverlay(false);
     };
     document.onmousemove = (event) => {
       var top = offsetTop + event.clientY;

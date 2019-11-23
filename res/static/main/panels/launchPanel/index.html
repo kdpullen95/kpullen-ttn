@@ -2,21 +2,21 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <script src="index.js"></script>
   <link rel="stylesheet" href="../../../css/defstyle.css" type="text/css"/>
   <link rel="stylesheet" type="text/css" id="themeCSS" />
+  <script src="index.js"></script>
 </head>
 <body class="interiorPanel" class="lightAccentBG lightFontColor">
   <div id="selections">
-    <select id="panelSelect" onchange="updateOptions()" class="lightestAccentBG bordered lightFontColor"></select>
-    <input type="text" id="search" placeholder="search..." oninput="runSearch()" class="lightestAccentBG bordered lightFontColor"/>
+    <select id="panelSelect" onchange="updateOptions()" class="lightestAccentBG bordered"></select>
+    <input type="text" id="search" placeholder="search..." oninput="runSearch()" class="lightestAccentBG bordered"/>
     <div id="loadWhich" class="lightFontColor">
 
     </div>
     <div>
-      <input type="text" id="readableName" placeholder"custom name..." class="lightestAccentBG bordered lightFontColor"/>
+      <input type="text" id="readableName" placeholder"custom name..." class="lightestAccentBG bordered"/>
     </div>
-    <button onclick="submitSelection()" class="lightestAccentBG bordered lightFontColor" id="submitButton">Create New</button>
+    <button onclick="submitSelection()" class="lightestAccentBG bordered" id="submitButton">Create New</button>
   </div>
 </body>
 </html>

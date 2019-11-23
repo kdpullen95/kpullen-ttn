@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
   <meta charset="UTF-8">
-  <script src="index.js"></script>
   <link rel="stylesheet" href="../../../css/defstyle.css" type="text/css" />
   <link rel="stylesheet" type="text/css" id="themeCSS" />
   <link rel="stylesheet" href="style.css" type="text/css"/>
+  <script src="index.js"></script> 
 </head>
-<body class="interiorPanel" class="lightAccentBG">
+<body class="interiorPanel lightAccentBG lightFontColor">
   <div id="loadPage">
     <input type="text" id="searchSheets" placeholder="search..." oninput="runSearch()" />
     <div id="loadWhich"></div>
@@ -30,5 +30,6 @@
       </div>
     </div>
   </div>
+  <script src="index.js"></script> <!--breaks css if in head?-->
 </body>
 </html>

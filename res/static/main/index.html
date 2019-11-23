@@ -35,6 +35,11 @@
       <button onclick="loadTemplate()">Load Template</button> | |
       Theme: <select id="themeSelect" oninput="themeSelect(this)"></select> | |
       Snap-to-Grid: <input type="number" id="gridSizeSelector" value="0" min="0" step="20" onchange="modifyGridSizeSelector(event, this)" />
+      Visibility: <select id="gridVisibilitySelector" onchange="modifyGridVisibilitySelector()">
+        <option value="dragging">Dragging</option>
+        <option value="always">Always</option>
+        <option value="never">Never</option>
+      </select> | |
     </div>
   </div>
   <img id="hideShowMenu" class="icon" src="../icons/hideMenu.png" onmousedown="hideShowMenu(this)" />

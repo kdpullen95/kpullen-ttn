@@ -1,5 +1,5 @@
-const editTemplate = '<div class="lightFontColor">#value#: <input type="text" data-targetID="#value#" class="editFields" autocomplete="new-password"/></div>';
-const radioTemplate = '<div class="lightFontColor"><input type="radio" value="#value#" name="sheetSelect" data-type="#type#"/> #label#</div>';
+const editTemplate = '<div>#value#: <input type="text" data-targetID="#value#" class="editFields" autocomplete="new-password"/></div>';
+const radioTemplate = '<div><input type="radio" value="#value#" name="sheetSelect" data-type="#type#"/> #label#</div>';
 
 function init(panel, themeURL) {
   this.panel = panel;
@@ -34,7 +34,6 @@ function saveChanges() {
 function populateSheets(message) {
   var div = document.getElementById('loadPage');
   message.content.sheetArray.forEach( (sheet) => {
-    console.log(buildRadioDOM("[" + sheet.type + "] " + sheet.label, sheet.value, sheet.type));
     div.innerHTML += buildRadioDOM("[" + sheet.type + "] " + sheet.label, sheet.value, sheet.type);
   });
 }
